@@ -1,0 +1,13 @@
+.app-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+/* Make sure the buttons are properly spaced and aligned */
+.app-container > div {
+  margin: 0 10px;
+}
