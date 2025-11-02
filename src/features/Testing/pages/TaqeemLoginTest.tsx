@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { taqeemLogin } from "../api";
+import { taqeemLogin, submitOTP } from "../api";
 import { useTaqeemAuth } from "../../../shared/context/TaqeemAuthContext";
 
 interface TaqeemLoginTestProps {
@@ -15,43 +15,69 @@ export default function TaqeemLoginTest({ setIsLoggedIn: setLoggedInProp }: Taqe
     const [progressMessage, setProgressMessage] = useState("");
     const [loading, setLoading] = useState(false);
 
+    // Handle initial login (email + password)
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         try {
-            if (!otpRequired) {
-                setProgressMessage("🔑 Entering Email and Password...");
-            } else {
-                setProgressMessage("📲 Verifying OTP...");
-            }
+            setProgressMessage("🔑 Entering Email and Password...");
 
-            const response = await taqeemLogin(email, password, otpRequired ? otp : undefined);
+            const response = await taqeemLogin(email, password);
             console.log(response);
 
-            if (response.status === "NOT_FOUND") {
-                setProgressMessage("❌ User not found. Please try again.");
-            } else if (response.status === "OTP_REQUIRED") {
-                setOtpRequired(true);
-                setProgressMessage("✅ Email and Password accepted. Please enter OTP.");
-            } else if (response.status === "OTP_FAILED") {
-                setProgressMessage("❌ OTP failed. Please try again.");
-            } else if (response.status === "SUCCESS") {
-                setIsLoggedIn(true);
-                if (setLoggedInProp) setLoggedInProp(true);
-                setProgressMessage("🎉 Login successful!");
-                // Reset form on success
-                resetForm();
-            } else if (response.status === "FAILED") {
-                resetForm();
-                setProgressMessage("❌ Login failed. Please try again.");
-                alert("Login failed. Please try again.");
+            if (response.success) {
+                if (response.requiresOtp) {
+                    setOtpRequired(true);
+                    setProgressMessage("✅ Email and Password accepted. Please enter OTP.");
+                } else {
+                    setIsLoggedIn(true);
+                    if (setLoggedInProp) setLoggedInProp(true);
+                    setProgressMessage("🎉 Login successful!");
+                    resetForm();
+                }
             } else {
-                setProgressMessage("❌ Login failed");
-                alert("Login failed");
+                if (response.message?.includes("not found") || response.message?.includes("invalid credentials")) {
+                    setProgressMessage("❌ Invalid email or password. Please try again.");
+                } else {
+                    resetForm();
+                    setProgressMessage("❌ Login failed. Please try again.");
+                    alert("Login failed. Please try again.");
+                }
             }
         } catch (error) {
             console.error(error);
             setProgressMessage("⚠️ Something went wrong");
+            alert("Something went wrong");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Handle OTP verification
+    const handleSubmitOTP = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            setProgressMessage("📲 Verifying OTP...");
+
+            const response = await submitOTP(otp);
+            console.log(response);
+
+            if (response.success) {
+                setIsLoggedIn(true);
+                if (setLoggedInProp) setLoggedInProp(true);
+                setProgressMessage("🎉 Login successful!");
+                resetForm();
+            } else {
+                if (response.message?.includes("OTP") || response.message?.includes("invalid")) {
+                    setProgressMessage("❌ OTP verification failed. Please try again.");
+                } else {
+                    setProgressMessage("❌ OTP verification failed. Please try again.");
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            setProgressMessage("⚠️ Something went wrong during OTP verification");
             alert("Something went wrong");
         } finally {
             setLoading(false);
@@ -103,7 +129,7 @@ export default function TaqeemLoginTest({ setIsLoggedIn: setLoggedInProp }: Taqe
                 )}
 
                 {/* Login Form */}
-                <form className="space-y-6" onSubmit={handleSubmit}>
+                <form className="space-y-6" onSubmit={otpRequired ? handleSubmitOTP : handleSubmit}>
                     {otpRequired ? (
                         <div className="space-y-4">
                             <div>
@@ -164,9 +190,6 @@ export default function TaqeemLoginTest({ setIsLoggedIn: setLoggedInProp }: Taqe
                                     required
                                 />
                             </div>
-
-                            <div className="flex items-center justify-between">
-                            </div>
                         </div>
                     )}
 
@@ -181,15 +204,13 @@ export default function TaqeemLoginTest({ setIsLoggedIn: setLoggedInProp }: Taqe
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                {otpRequired ? "Verifying..." : "Signing in..."}
+                                {otpRequired ? "Verifying OTP..." : "Signing in..."}
                             </>
                         ) : (
                             otpRequired ? "Verify OTP" : "Sign In"
                         )}
                     </button>
                 </form>
-
-                {/* Footer */}
 
                 {/* Security Note */}
                 <div className="mt-6 text-center">

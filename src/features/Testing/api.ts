@@ -121,12 +121,11 @@ export const extractReportData = async (excel: File, pdfs: File[]) => {
 
 // ============ Taqeem Authentication ============
 
-export const taqeemLogin = async (email: string, password: string, otp?: string) => {
+export const taqeemLogin = async (email: string, password: string,) => {
   try {
-    const response = await api.post('/scripts/equip/login', {
+    const response = await api.post('/taqeemAuth/login', {
       email: email.trim(),
       password: password.trim(),
-      otp: otp?.trim(), 
     });
     return response.data;
   } catch (error) {
@@ -134,6 +133,16 @@ export const taqeemLogin = async (email: string, password: string, otp?: string)
   }
 };
 
+export const submitOTP = async (otp: string) => {
+  try {
+    const response = await api.post('/taqeemAuth/otp', {
+      otp: otp.trim(),
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('Error verifying OTP');
+  }
+}
 // ============ DEPRECATED HTTP APIs (Kept for fallback) ============
 // These are now handled via Socket.IO in the component
 // But kept here for backwards compatibility or testing
