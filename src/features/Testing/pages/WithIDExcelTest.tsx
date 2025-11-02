@@ -1,0 +1,452 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { 
+  Upload, 
+  FileCheck, 
+  CheckCircle, 
+  Save,
+  FileText,
+  RefreshCw,
+  ArrowLeft,
+  Download
+} from "lucide-react";
+
+import { uploadAssetsToDB } from "../api";
+import { 
+  ValidationError, 
+  ValidationResults,
+  validateIDExcelData 
+} from "../utils/validations";
+import { readExcelFile, downloadCorrectedExcel } from "../utils/excelUtils";
+
+import ProgressIndicator from "../components/ProgressIndicator";
+import StepHeader from "../components/StepHeader";
+import FileUpload from "../components/FileUpload";
+import CheckResult from "../components/CheckResult";
+import NavigationButtons from "../components/NavigationButtons";
+import LoadingSpinner from "../components/LoadingSpinner";
+import SuccessState from "../components/SuccessState";
+
+const WithIDExcelTest: React.FC = () => {
+  const navigate = useNavigate();
+
+  // Step management
+  const [currentStep, setCurrentStep] = useState<
+    'excel-upload' | 'excel-validation' | 'report-id' | 'upload-to-db' | 'success'
+  >('excel-upload');
+
+  // Files & data
+  const [excelFile, setExcelFile] = useState<File | null>(null);
+  const [excelDataSheets, setExcelDataSheets] = useState<any[][][]>([]);
+  const [reportId, setReportId] = useState("");
+  
+  // Validation state
+  const [validationResults, setValidationResults] = useState<ValidationResults>({
+    hasEmptyFields: false,
+    hasFractionInFinalValue: false,
+    hasInvalidPurposeId: false,
+    hasInvalidValuePremiseId: false,
+    hasMissingRequiredHeaders: false,
+    isReportValueValid: true,
+    totalErrors: 0
+  });
+  
+  const [excelErrors, setExcelErrors] = useState<ValidationError[]>([]);
+  const [isValidating, setIsValidating] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState("");
+
+  // Step definitions for progress indicator
+  const steps = [
+    { step: 'excel-upload', label: 'Excel Upload', icon: Upload },
+    { step: 'excel-validation', label: 'Excel Validation', icon: FileCheck },
+    { step: 'report-id', label: 'Report ID', icon: FileText },
+    { step: 'upload-to-db', label: 'Upload to DB', icon: Save },
+    { step: 'success', label: 'Success', icon: CheckCircle }
+  ];
+
+  // Step 1: Excel File Upload
+  const handleExcelUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files[0]) {
+      setExcelFile(files[0]);
+      setError("");
+      try {
+        const sheetsData = await readExcelFile(files[0]);
+        
+        // Validate that we have exactly 2 sheets for ID test
+        if (sheetsData.length !== 2) {
+          setError("ID Excel test requires exactly 2 sheets. Please use the correct template.");
+          return;
+        }
+        
+        setExcelDataSheets(sheetsData);
+        setCurrentStep('excel-validation');
+      } catch (err) {
+        console.error(err);
+        setError("Error reading Excel file. Please make sure the file is valid.");
+      }
+    }
+  };
+
+  // Step 2: Validate Excel File - Using ID-specific validation
+  const handleValidateExcel = async () => {
+    if (!excelFile || !excelDataSheets.length) return;
+    
+    setIsValidating(true);
+    
+    setTimeout(() => {
+      // Use ID-specific validation that expects only 2 sheets
+      const { errors, results } = validateIDExcelData(excelDataSheets);
+      
+      setExcelErrors(errors);
+      setValidationResults(results);
+      setIsValidating(false);
+
+      if (errors.length === 0) {
+        setCurrentStep('report-id');
+      }
+    }, 1500);
+  };
+
+  // Step 4: Upload to DB
+  const handleUploadToDB = async () => {
+    if (!excelFile || !reportId.trim()) return;
+    
+    try {
+      setIsUploading(true);
+      const response = await uploadAssetsToDB(reportId, excelFile);
+      
+      if (response?.status === "SAVED") {
+        setCurrentStep('success');
+      } else {
+        setError("Failed to save report. Please try again.");
+      }
+
+    } catch (error) {
+      console.error("Error:", error);
+      setError("Error saving report. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Download corrected file
+  const handleDownloadCorrectedExcel = () => {
+    downloadCorrectedExcel(excelDataSheets, excelErrors, "corrected_report.xlsx");
+  };
+
+  // Reset validation state
+  const resetValidationState = () => {
+    setExcelErrors([]);
+    setValidationResults({
+      hasEmptyFields: false,
+      hasFractionInFinalValue: false,
+      hasInvalidPurposeId: false,
+      hasInvalidValuePremiseId: false,
+      hasMissingRequiredHeaders: false,
+      isReportValueValid: true,
+      totalErrors: 0
+    });
+    setCurrentStep('excel-upload');
+  };
+
+  // Reset entire process
+  const resetProcess = () => {
+    setCurrentStep('excel-upload');
+    setExcelFile(null);
+    setExcelDataSheets([]);
+    setExcelErrors([]);
+    setReportId("");
+    setError("");
+  };
+
+  // Download template
+  const handleDownloadTemplate = () => {
+    // This would download the ID.xlsx template file with 2 sheets
+    window.open("/ID.xlsx", "_blank");
+  };
+
+  const isExcelValid = excelErrors.length === 0;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-4 mx-auto transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </button>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">📊 Equipment Report with ID</h1>
+          <p className="text-gray-600">Upload and validate Excel reports with report ID (2 sheets required)</p>
+        </div>
+
+        {/* Progress Indicator */}
+        <ProgressIndicator currentStep={currentStep} steps={steps} />
+
+        {/* Main Content Area */}
+        <div className="bg-white rounded-2xl shadow-lg p-6">
+          {/* Step 1: Excel Upload */}
+          {currentStep === 'excel-upload' && (
+            <div className="space-y-6">
+              <StepHeader
+                icon={Upload}
+                title="Upload Excel File"
+                description="Start by uploading your Excel file with 2 asset sheets"
+                iconColor="text-blue-500"
+              />
+
+              <div className="text-center mb-4">
+                <button
+                  onClick={handleDownloadTemplate}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Download Template
+                </button>
+                <p className="text-xs text-gray-500 mt-2">Download the Excel template with 2 required sheets</p>
+              </div>
+
+              <FileUpload
+                label="Excel File (2 sheets)"
+                accept=".xlsx,.xls"
+                onFileChange={handleExcelUpload}
+                file={excelFile}
+                description="Upload Excel file with 2 asset sheets"
+              />
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <FileCheck className="w-5 h-5 text-red-500" />
+                    <span className="text-red-700">{error}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 2: Excel Validation */}
+          {currentStep === 'excel-validation' && (
+            <div className="space-y-6">
+              <StepHeader
+                icon={FileCheck}
+                title="Validate Excel File"
+                description="Check your 2-sheet Excel file for errors before proceeding"
+                iconColor="text-yellow-500"
+              />
+
+              {excelFile && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-5 h-5 text-blue-500" />
+                    <div>
+                      <p className="font-medium text-blue-800">Current file</p>
+                      <p className="text-sm text-blue-600">{excelFile.name}</p>
+                      <p className="text-xs text-blue-500 mt-1">
+                        Sheets: {excelDataSheets.length} (Sheet 1 & Sheet 2)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Show validation button only when not validating and no results yet */}
+              {!isValidating && excelErrors.length === 0 && (
+                <div className="text-center space-y-4">
+                  <button
+                    onClick={handleValidateExcel}
+                    disabled={!excelFile}
+                    className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-semibold flex items-center gap-2 mx-auto transition-colors"
+                  >
+                    <FileCheck className="w-4 h-4" />
+                    Start Validation
+                  </button>
+                  
+                  <button
+                    onClick={() => setCurrentStep('excel-upload')}
+                    className="px-6 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors"
+                  >
+                    Upload Different File
+                  </button>
+                </div>
+              )}
+
+              {isValidating && (
+                <LoadingSpinner message="Validating Excel file..." />
+              )}
+
+              {/* Validation Results */}
+              {!isValidating && excelErrors.length > 0 && (
+                <CheckResult
+                  results={validationResults}
+                  errorCount={excelErrors.length}
+                  onDownloadCorrected={handleDownloadCorrectedExcel}
+                  onUploadNew={resetValidationState}
+                />
+              )}
+
+              {/* Success State */}
+              {!isValidating && isExcelValid && excelErrors.length === 0 && validationResults.totalErrors === 0 && (
+                <SuccessState
+                  title="Validation Successful"
+                  message="No errors found in your 2-sheet Excel file"
+                  actionLabel="Continue to Report ID"
+                  onAction={() => setCurrentStep('report-id')}
+                />
+              )}
+            </div>
+          )}
+
+          {/* The rest of the component remains the same */}
+          {/* Step 3: Report ID */}
+          {currentStep === 'report-id' && (
+            <div className="space-y-6">
+              <StepHeader
+                icon={FileText}
+                title="Enter Report ID"
+                description="Provide a unique identifier for this report"
+                iconColor="text-purple-500"
+              />
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Report ID *
+                  </label>
+                  <input
+                    type="text"
+                    value={reportId}
+                    onChange={(e) => setReportId(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="Enter unique report ID"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    This ID will be used to identify the report in the system
+                  </p>
+                </div>
+
+                {excelFile && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <div>
+                        <p className="font-medium text-green-800">Excel file ready</p>
+                        <p className="text-sm text-green-600">{excelFile.name}</p>
+                        <p className="text-xs text-green-500 mt-1">2 sheets validated</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <NavigationButtons
+                onBack={() => setCurrentStep('excel-validation')}
+                onNext={() => setCurrentStep('upload-to-db')}
+                nextLabel="Continue to Upload"
+                backLabel="Back to Validation"
+                nextDisabled={!reportId.trim()}
+              />
+            </div>
+          )}
+
+          {/* Step 4: Upload to DB */}
+          {currentStep === 'upload-to-db' && (
+            <div className="space-y-6">
+              <StepHeader
+                icon={Save}
+                title="Upload to Database"
+                description="Complete the process by uploading the report to the database"
+                iconColor="text-green-500"
+              />
+
+              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-center py-2 border-b">
+                  <span className="font-medium">Excel File:</span>
+                  <span className="text-green-600 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" />
+                    {excelFile?.name}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <span className="font-medium">Report ID:</span>
+                  <span className="text-green-600 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" />
+                    {reportId}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <span className="font-medium">Sheets:</span>
+                  <span className="text-green-600 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" />
+                    2 sheets
+                  </span>
+                </div>
+              </div>
+
+              <NavigationButtons
+                onBack={() => setCurrentStep('report-id')}
+                onNext={handleUploadToDB}
+                nextLabel={isUploading ? "Uploading..." : "Upload To Database"}
+                backLabel="Back to Report ID"
+                nextDisabled={!excelFile || !reportId.trim() || isUploading}
+                nextIcon={isUploading ? RefreshCw : Save}
+              />
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <FileCheck className="w-5 h-5 text-red-500" />
+                    <span className="text-red-700">{error}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 5: Success */}
+          {currentStep === 'success' && (
+            <div className="space-y-6">
+              <StepHeader
+                icon={CheckCircle}
+                title="Success!"
+                description="Your equipment report has been saved successfully"
+                iconColor="text-green-500"
+              />
+
+              <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-8 h-8 text-green-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-green-800 mb-2">Report Saved Successfully!</h3>
+                <p className="text-green-600 mb-2">Report ID: <strong>{reportId}</strong></p>
+                <p className="text-green-600 mb-4">The equipment report with 2 asset sheets has been successfully processed and saved in the system.</p>
+                
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={() => navigate("/equipment/viewReports")}
+                    className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
+                  >
+                    View Reports
+                  </button>
+                  <button
+                    onClick={resetProcess}
+                    className="px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg font-semibold transition-colors"
+                  >
+                    Start New Report
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default WithIDExcelTest;

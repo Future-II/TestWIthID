@@ -1,68 +1,144 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* RTL/LTR Support */
+[dir="rtl"] {
+  direction: rtl;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+[dir="ltr"] {
+  direction: ltr;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+/* RTL specific adjustments */
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Sidebar positioning transitions */
+.sidebar-rtl {
+  right: 0;
+  left: auto;
+  border-left: 1px solid #e5e7eb;
+  border-right: none;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+.sidebar-ltr {
+  left: 0;
+  right: auto;
+  border-right: 1px solid #e5e7eb;
+  border-left: none;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* Smooth sidebar transitions */
+.sidebar-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Language toggle specific positioning */
+.language-indicator {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.language-indicator.rtl {
+  right: 0.25rem;
+  left: auto;
+}
+
+.language-indicator.ltr {
+  left: 0.25rem;
+  right: auto;
+}
+
+/* Smooth transitions for language changes */
+* {
+  transition: font-family 0.3s ease;
+}
+
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Focus styles for better accessibility */
+.focus-visible:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Animation classes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-  a:hover {
-    color: #747bff;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  button {
-    background-color: #f9f9f9;
-  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Language toggle specific styles */
+.language-toggle-enter {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.language-toggle-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 200ms, transform 200ms;
+}
+
+.language-toggle-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.language-toggle-exit-active {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 200ms, transform 200ms;
+}
+
+/* Smooth position transitions */
+.transition-position {
+  transition: left 0.3s ease, right 0.3s ease;
+}
+
+/* Layout direction transitions */
+.layout-transition {
+  transition: all 0.3s ease;
+}
+
+/* Sidebar slide animations */
+.sidebar-slide-rtl {
+  transform: translateX(100%);
+}
+
+.sidebar-slide-ltr {
+  transform: translateX(-100%);
+}
+
+.sidebar-slide-center {
+  transform: translateX(0);
 }

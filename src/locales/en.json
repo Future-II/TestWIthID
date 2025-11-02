@@ -1,0 +1,1063 @@
+{
+  "navbar": {
+    "openMenu": "Open Menu",
+    "realEstateSystem": "Real Estate System",
+    "userSettings": "User Settings",
+    "logout": "Logout"
+  },
+  "home": {
+    "title": "Home",
+    "hero": {
+      "tagline": "The perfect solution for managing real estate reports",
+      "title": "Real Estate Reports Management System",
+      "subtitle": "🚀 An integrated and intelligent platform to manage, retrieve, and send real estate reports between different systems with high efficiency and speed.",
+      "ctaPrimary": "Start using the system now",
+      "ctaSecondary": "Learn more",
+      "featureUsers": "Over 1000+ users",
+      "featureSupport": "24/7 technical support",
+      "featureSecurity": "High security"
+    },
+    "testimonials": {
+      "title": "What Our Clients Say",
+      "subtitle": "Real feedback from happy customers",
+      "items": [
+        {
+          "name": "Mohammed Al-Qadi",
+          "role": "Property Manager",
+          "text": "Excellent integration with our current systems. Solved many daily issues."
+        },
+        {
+          "name": "Fatima Al-Zahrani",
+          "role": "Real Estate Developer",
+          "text": "Technical support is excellent and the system runs very efficiently. Highly recommended."
+        },
+        {
+          "name": "Ahmed Al-Maliki",
+          "role": "Real Estate Officer",
+          "text": "The system saved us hours of manual work. Speed and accuracy are amazing."
+        }
+      ]
+    },
+    "features": {
+      "whychoose": {
+        "heading": "Why Choose Our System?",
+        "subheading": "We provide the best technology solutions for managing real estate reports efficiently and professionally.",
+        "cards": [
+          {
+            "title": "Super Fast ⚡",
+            "desc": "Pull and send reports in seconds using advanced technology that saves you hours of work."
+          },
+          {
+            "title": "High Security 🔒",
+            "desc": "Advanced protection for your data with military-grade encryption and compliance with international standards."
+          },
+          {
+            "title": "Full Integration 🌐",
+            "desc": "Integrates with all major real estate systems in the Kingdom using advanced APIs."
+          },
+          {
+            "title": "Available 24/7 ⏰",
+            "desc": "Continuous service around the clock with specialized technical support to keep your work running."
+          }
+        ]
+      },
+      "partners": {
+        "title": "Supported Systems and Partners",
+        "subtitle": "We integrate with the best real estate systems in the Kingdom",
+        "cards": {
+          "gauge": {
+            "title": "Gauge",
+            "subtitle": "Measurement system – full integration"
+          },
+          "click": {
+            "title": "Click",
+            "subtitle": "Click system – advanced support"
+          },
+          "other": {
+            "title": "Other Systems",
+            "subtitle": "Partial support"
+          },
+          "custom": {
+            "title": "Custom API",
+            "subtitle": "On demand"
+          }
+        },
+        "stats": {
+          "users": "Users",
+          "reports": "Reports",
+          "uptime": "Uptime",
+          "support": "Support"
+        }
+      },
+      "benefits": {
+        "title": "Benefits of Using the System",
+        "subtitle": "Discover how our system can transform the way you work.",
+        "points": [
+          {
+            "title": "Increase productivity by 300%",
+            "desc": "Save hours of manual work and benefit from smart automation."
+          },
+          {
+            "title": "Enhanced team collaboration",
+            "desc": "Share reports and data with your team easily and securely."
+          },
+          {
+            "title": "Advanced report management",
+            "desc": "Organize and archive your reports with advanced search and filtering capabilities."
+          }
+        ],
+        "cta": {
+          "title": "Try the system for free",
+          "desc": "Start your journey with us today and discover the difference.",
+          "button": "Start now for free →"
+        }
+      }
+    },
+    "pricing": {
+      "badge": "Choose the right plan for you",
+      "title": "Subscription Plans",
+      "paymentMethods": {
+        "available": {
+          "title": "Available Payment Methods",
+          "subtitle": "Choose from the following payment options for your convenience.",
+          "methods": {
+            "cards": {
+              "title": "Credit / Debit Cards",
+              "note": "Pay securely with your Visa, MasterCard, or Mada card."
+            },
+            "bank": {
+              "title": "Bank Transfer",
+              "note": "Send your payment directly from your bank account."
+            },
+            "stcpay": {
+              "title": "STC Pay",
+              "note": "Use STC Pay for quick and easy transactions."
+            },
+            "billing": {
+              "title": "Billing",
+              "note": "Receive an invoice and pay at a later date."
+            }
+          }
+        },
+        "help": {
+          "title": "Need Help Choosing?",
+          "subtitle": "Contact us through any of the following support channels.",
+          "options": {
+            "phone": {
+              "title": "Call Us",
+              "note": "Speak directly with our support team."
+            },
+            "email": {
+              "title": "Email Us",
+              "note": "Send your questions to our support email."
+            },
+            "booking": {
+              "title": "Book a Meeting",
+              "note": "Schedule a call with our payment advisor."
+            }
+          },
+          "button": "Contact Support"
+        }
+      },
+      "description": "Flexible plans to suit your needs — from individuals to large enterprises",
+      "plans": [
+        {
+          "name": "Basic Plan",
+          "desc": "Ideal for individuals and small businesses",
+          "price": "299",
+          "priceUnit": "SAR/month",
+          "features": [
+            "Up to 100 reports per month",
+            "Integration with Gauge system",
+            "Email support",
+            "5GB storage",
+            "Single user"
+          ],
+          "button": "Choose this plan"
+        },
+        {
+          "name": "Professional Plan",
+          "desc": "Best for medium-sized businesses",
+          "price": "599",
+          "priceUnit": "SAR/month",
+          "discount": "Save 20% annually",
+          "features": [
+            "Up to 500 reports per month",
+            "Integration with Gauge and Click",
+            "Direct phone support",
+            "25GB storage",
+            "Up to 5 users",
+            "Advanced analytical reports"
+          ],
+          "button": "Choose this plan",
+          "tag": "Most popular"
+        },
+        {
+          "name": "Enterprise Plan",
+          "desc": "For large companies and organizations",
+          "price": "1299",
+          "priceUnit": "SAR/month",
+          "discount": "Save 30% annually",
+          "features": [
+            "Unlimited reports",
+            "Integration with all systems",
+            "Dedicated account manager",
+            "Unlimited storage",
+            "Unlimited users",
+            "Custom APIs"
+          ],
+          "button": "Contact us"
+        }
+      ],
+      "offer": {
+        "badge": "Limited offer",
+        "title": "Get an extra month for free!",
+        "desc": "When you subscribe annually to any plan · Offer valid until the end of the month"
+      }
+    },
+    "steps": {
+      "heading": "Easy Subscription Steps",
+      "subheading": "Start your journey with us in 4 simple steps",
+      "1": {
+        "title": "Choose Your Plan",
+        "desc": "Select the package that best fits your needs and business size."
+      },
+      "2": {
+        "title": "Create Your Account",
+        "desc": "Register your basic information and business details easily."
+      },
+      "3": {
+        "title": "Pay Securely",
+        "desc": "Choose your preferred payment method and complete a safe transaction."
+      },
+      "4": {
+        "title": "Start Using",
+        "desc": "Enjoy all the features instantly and receive free training."
+      },
+      "cta": "Start Subscription Now"
+    },
+    "support": {
+      "title": "Do you need help?",
+      "subtitle": "Our dedicated technical support team is available to assist you around the clock. We’re here to ensure your success and achieve your goals.",
+      "helpCenter": "Help Center",
+      "contactSupport": "Contact technical support"
+    }
+  },
+  "equipment": {
+    "title": "Equipment Reports",
+    "tab1": "Upload Report",
+    "tab2": "All Reports",
+    "steps": {
+      "1": {
+        "label": "Pull Property Report (Excel/PDF)"
+      },
+      "2": {
+        "label": "Property Report Data"
+      },
+      "3": {
+        "label": "Property Data"
+      },
+      "4": {
+        "label": "Sending Data"
+      }
+    },
+    "button": "Continue",
+    "upload": {
+      "excel": {
+        "label": "Drag Excel here or click to upload",
+        "button": "Choose Excel",
+        "subLabel": "The file must be in XLSX or XLS format"
+      },
+      "pdf": {
+        "label": "Drag related PDFs here or click to upload",
+        "button": "Choose PDFs",
+        "subLabel": "The file must be in PDF format"
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Management Dashboard",
+    "description": "Manage your system, users and reports",
+    "overview": {
+      "title": "Overview",
+      "totalCompanies": "Total Companies",
+      "totalUsers": "Active Users",
+      "totalSubscriptions": "Total Subscriptions",
+      "pendingTickets": "Pending Tickets",
+      "fromLastMonth": "from last month"
+    },
+    "companiesUser": {
+      "title": "Manage Companies"
+    },
+    "packages": {
+      "title": "Manage Packages"
+    },
+    "support": {
+      "title": "Technical Support"
+    },
+    "recentTickets": {
+      "title": "Recent Tickets",
+      "viewDetails": "View Details",
+      "viewAll": "View All Tickets"
+    },
+    "ticketStatus": {
+      "open": "Open",
+      "inProgress": "In Progress",
+      "closed": "Closed"
+    },
+    "recentCompanies": {
+      "title": "Company and Users",
+      "company": "Company",
+      "users": "Users",
+      "package": "Package",
+      "status": "Status",
+      "viewAll": "View All Companies",
+      "addCompany": "Add Company",
+      "editCompany": "Edit Company"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "companies": "Companies",
+    "users": "Users",
+    "tickets": "Support Tickets",
+    "recentActivity": "Recent Activity",
+    "stats": {
+      "totalCompanies": "Total Companies",
+      "activeUsers": "Active Users",
+      "totalRevenue": "Total Revenue",
+      "pendingTickets": "Pending Tickets"
+    }
+  },
+  "logintranslator":{
+    "realstate":{
+      "title": "Real Estate Reporting System",
+      "description":"An integrated platform for managing and sending real estate reports",
+      "title1": "High security",
+      "description1":"Advanced protection for your data and reports",
+      "title2": "Ease of use",
+      "description2":"Simple and understandable interface for everyone",
+      "title3": "Comprehensive integration",
+      "description3":"Connecting with gauge, click and body systems"
+    },
+    "login":{
+      "title":"Login",
+      "subtitle":"Welcome back",
+      "description":"Sign in to access your account",
+      "email":"Email",
+      "placeholder": "Enter your email",
+      "pass":"Password",
+      "placeholder1":"Enter your password",
+      "remember":"Remember me",
+      "forget":"Forgot password?",
+      "button": "Login"
+
+    },
+    "register":{
+      "title":"Create Account",
+      "subtitle":"Create a new account",
+      "description":"Join us and start managing your reports",
+      "type":{
+        "title":"Account Type",
+        "company":"Company",
+        "individual":"Individual",
+        "companyDesc":"Register as a company to manage users and reports",
+        "individualDesc":"Register as an individual user"
+      },
+      "personal":{
+        "title":"Personal information",
+        "ist":"First Name",
+        "last":"Last Name",
+        "istplace":"First Name",
+        "lastplace":"Last Name",
+        "email":"Email",
+        "emailplace":"Enter your email",
+        "phone":"Phone number",
+        "phoneplace":"xxxxxxxx"
+      },
+      "company":{
+        "title":"Company information",
+        "name":"Company name",
+        "placeholder":"Enter your company name",
+        "type":{
+          "title":"Company type",
+          "a":"Choose your type",
+          "b":"Real estate company",
+          "c":"Construction company",
+          "d":"property management"
+        },
+        "license":"License number",
+        "licplaceholder":"License number",
+        "city":{
+          "title":"City",
+          "a":"Choose a city",
+          "b":"Riyadh",
+          "c":"Jeddah",
+          "d":"Dammam",
+          "e":"Mecca",
+          "f":"Medina"
+        }
+      },
+      "account":{
+        "title":"Account information",
+        "pass":"Password",
+        "passplace":"Enter your password",
+        "cpass":"Confirm Paasword",
+        "cpassplace":"Enter your confirm password",
+        "agree":"I agree to Terms & Conditions and Privacy Policy",
+        "receive":"I want to receive the newsletter and updates",
+        "button":"Create Account"
+      }
+
+    }
+  },
+  "automation":{
+     "automation report":{
+      "report name":"Report name...",
+      "site":"Site...",
+      "condition":{
+        "a":"the condition...",
+        "b":"Complete",
+        "c":"Pending",
+        "d":"Draft"
+      },
+      "reference":"Reference number..",
+      "property":"Property type..",
+      "button":"research"
+     },
+     "pull property":{
+      "title":"No reports selected",
+      "description":"Enter search criteria above to find property reports"
+     }
+  },
+
+  "reports": {
+    "title": "Real Estate Reports",
+    "mekyas": "Mekyas Reports",
+    "noqra": "Noqra Reports",
+    "view": "View Reports",
+    "manual": "Manual Property Extraction",
+    "automatic": "Automatic",
+    "single": "Single",
+    "withdraw": "Withdraw",
+    "verify": "Verify",
+    "send": "Send",
+    "processing": "Processing...",
+    "success": "Success",
+    "error": "Error"
+  },
+  "settings": {
+    "title": "User Settings",
+    "description": "Manage your users and reports",
+    "profile": "Profile",
+    "subscription": "Subscription",
+    "notifications": "Notifications",
+    "security": "Security",
+    "users": "User and Company Management",
+    "notificationsTab": {
+      "title": "Notifications",
+      "email": {
+        "title": "Email Notifications",
+        "description": "Receive notifications via email"
+      },
+      "system": {
+        "title": "System Notifications",
+        "description": "Receive notifications inside the system"
+      },
+      "reports": {
+        "title": "Report Alerts",
+        "description": "Get notified when report withdrawal or sending is completed"
+      }
+    }
+  },
+  "support": {
+    "title": "Support",
+    "liveChat": {
+      "title": "Live Chat",
+      "description": "Chat directly with the support team during working hours from 8 AM to 5 PM",
+      "button": "Start Chat"
+    },
+    "teamPerformance": {
+      "ticketLabel": "Ticket",
+      "avgResponse": "Average Response",
+      "hoursLabel": "Hours",
+      "title": "Team Performance"
+    },
+    "ticketTypes": {
+      "technicalIssues": "Technical Issues",
+      "upgradeRequests": "Upgrade Requests",
+      "generalInquiries": "General Inquiries"
+    },
+    "stats": {
+      "avgResponseTime": "Average Response Time",
+      "avgResolutionTime": "Average Resolution Time",
+      "ticketsResolvedToday": "Tickets Resolved Today",
+      "ticketsResolvedThisWeek": "Tickets Resolved This Week",
+      "ticketsResolvedThisMonth": "Tickets Resolved This Month",
+      "ticketDistributionByType": "Ticket Distribution by Type",
+      "satisfactionRate": "Satisfaction Rate",
+      "hours": "Hours",
+      "days": "Days",
+      "performanceStats": "Performance Stats"
+    },
+    "recentTickets": {
+      "title": "Recent Tickets",
+      "viewDetails": "View Details",
+      "viewAll": "View All Tickets"
+    },
+    "ticketsTab": {
+      "title": "Support Tickets",
+      "subtitle": "View and manage your support tickets",
+      "searchPlaceholder": "Search tickets...",
+      "newTicket": "New Ticket",
+      "ticketNumber": "Ticket Number",
+      "lastUpdate": "Last Update",
+      "viewDetails": "View Details",
+      "viewMore": "View More",
+      "subjectDescription": "Subject and Description",
+      "viewChat": "View Chat"
+    },
+    "phone": {
+      "title": "Phone",
+      "description": "Call the support team on the dedicated number during working hours from 8 AM to 5 PM",
+      "number": "920001234"
+    },
+    "email": {
+      "title": "Email",
+      "description": "Send us an email and we will respond within 24 working hours",
+      "button": "Send Email"
+    },
+    "newTicket": {
+      "title": "Create a New Support Ticket",
+      "subjectLabel": "Ticket Subject",
+      "subjectPlaceholder": "Enter a brief title for the issue",
+      "priorityLabel": "Priority",
+      "priorityLow": "Low",
+      "priorityMedium": "Medium",
+      "priorityHigh": "High",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Explain the issue in detail and add any info that may help support",
+      "attachmentsLabel": "Attachments (Optional)",
+      "attachmentsText": "Drag files here or click to select",
+      "attachmentsInfo": "You can attach JPG, PNG or PDF files up to 10MB",
+      "attachmentsButton": "Choose Files",
+      "submitButton": "Submit Ticket"
+    },
+    "ticketStatus": {
+      "open": "Open",
+      "inProgress": "In Progress",
+      "closed": "Closed",
+      "highPriority": "High Priority",
+      "pending": "Pending",
+      "unassigned": "Unassigned"
+    },
+    "faqPrompt": {
+      "title": "Need Immediate Help?",
+      "description": "Browse the FAQ section for quick answers or use live chat for immediate support.",
+      "button": "Go to FAQ"
+    },
+    "ticketsData": {
+      "ticket1": {
+        "title": "Issue with Automatic Report Withdrawal",
+        "status": "Open",
+        "priority": "High",
+        "lastUpdate": "2 hours ago"
+      },
+      "ticket2": {
+        "title": "Inquiry About Plan Upgrade",
+        "status": "In Progress",
+        "priority": "Medium",
+        "lastUpdate": "1 day ago"
+      },
+      "ticket3": {
+        "title": "Request to Add New Users",
+        "status": "Closed",
+        "priority": "Low",
+        "lastUpdate": "2 days ago"
+      }
+    }
+  },
+  "common": {
+    "search": "Search",
+    "filter": "Filter",
+    "price": "Price",
+    "actions": "Actions",
+    "status": "Status",
+    "date": "Date",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "username": "Username",
+    "company": "Company",
+    "role": "Role",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "completed": "Completed",
+    "edit": "Edit",
+    "delete": "Delete",
+    "submit": "Submit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "loading": "Loading...",
+    "noData": "No data available",
+    "paid": "Paid",
+    "download": "Download",
+    "noDescription": "No description",
+    "notAssigned": "Not assigned",
+    "replies": "Replies",
+    "assignedTo": "Assigned To",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "priority": "Priority",
+    "fullName": "Full Name",
+    "enter": "Enter",
+    "password": "Password",
+    "select": "Select",
+    "contact": "Contact",
+    "phoneNumber": "Phone Number",
+    "features": "Features",
+    "send": "Send",
+    "show": "Show",
+    "hide": "Hide",
+    "fillRequiredFields": "Please fill in all required fields",
+    "fillUserFields": "Please fill in the user fields",
+    "selectRole": "Select Role"
+  },
+  "profile": {
+    "title": "Profile",
+    "changePicture": "Change Picture",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "role": "Role",
+    "address": "Address",
+    "website": "Website",
+    "bio": "Bio"
+  },
+  "modals": {
+    "addNewUser": "Add New User",
+    "selectCompany": "Select Company",
+    "addNewCompany": "Add New Company",
+    "editCompany": "Edit Company",
+    "editPackage": "Edit Package",
+    "addPackage": "Add Package"
+  },
+  "security": {
+    "password": {
+      "title": "Password",
+      "description": "Change your account password",
+      "button": "Change Password",
+      "current": "Current Password",
+      "new": "New Password",
+      "confirm": "Confirm New Password"
+    },
+    "twoFactor": {
+      "title": "Two-Factor Authentication",
+      "description": "Add an extra security layer to your account",
+      "button": "Enable 2FA"
+    }
+  },
+  "subscription": {
+    "currentPlan": "Current Plan",
+    "active": "Active",
+    "advancedPackage": "Advanced Package",
+    "renewalDate": "Renewal Date:",
+    "features": "Plan Features",
+    "feature1": "Automatic report withdrawal and sending",
+    "feature2": "Manage up to 10 users",
+    "feature3": "Store reports for a full year",
+    "feature4": "24/7 technical support",
+    "upgrade": "Upgrade Plan",
+    "billingHistory": "Billing History",
+    "invoiceNumber": "Invoice Number",
+    "date": "Date",
+    "amount": "Amount",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "faq": {
+    "title": "FAQ",
+    "subtitle": "Answers to the most common questions about using the system",
+    "searchPlaceholder": "Search in FAQs...",
+    "all": "All",
+    "noResults": {
+      "title": "No results found",
+      "subtitle": "Try different keywords or contact technical support"
+    },
+    "questions": {
+      "registration1": {
+        "question": "How do I register a new account?",
+        "answer": "You can register by filling in your email and password on the registration page."
+      },
+      "subscription1": {
+        "question": "How can I update my subscription?",
+        "answer": "Go to the My Account page and select Subscriptions to update your info."
+      },
+      "technical1": {
+        "question": "The system is not sending my reports, what should I do?",
+        "answer": "Please check your internet connection and report settings, then try again."
+      }
+    },
+    "needHelp": {
+      "title": "Didn't find your answer?",
+      "subtitle": "You can contact the support team directly via live chat or create a new support ticket.",
+      "newTicket": "Create New Ticket",
+      "liveChat": "Start Live Chat"
+    },
+    "item": {
+      "category": "Category",
+      "useful": "Useful",
+      "notUseful": "Not useful"
+    },
+    "tabs": {
+      "contact": "Contact",
+      "tickets": "Support Tickets",
+      "faq": "FAQ"
+    },
+    "categories": {
+      "registration": "Registration",
+      "subscription": "Subscription",
+      "technical": "Technical"
+    }
+  },
+  "users": {
+    "searchPlaceholder": "Search users...",
+    "addUser": "Add User",
+    "user": "User",
+    "role": "Role",
+    "company": "Company",
+    "status": "Status",
+    "lastActive": "Last Active",
+    "actions": "Actions",
+    "active": "Active",
+    "edit": "Edit",
+    "delete": "Delete",
+    "companyUsers": "company's users",
+    "individualUsers": "individual users",
+    "noUsersInCompany": "No users in this company",
+    "confirmDelete": "Are you sure you want to delete this user?",
+    "deletedSuccessfully": "User deleted successfully",
+    "deleteFailed": "Failed to delete user",
+    "noUsersFound": "No users found"
+  },
+  "companies": {
+    "companyUsers": "Company's users",
+    "individualUsers": "Individual users",
+    "addUserToCompany": "Add User to Company",
+    "addManagerUser": "Add Manager User",
+    "noUsersInCompany": "No users in this company",
+    "confirmDelete": "Are you sure you want to delete this user?",
+    "deletedSuccessfully": "User deleted successfully",
+    "deleteFailed": "Failed to delete user",
+    "companyAddedSuccessfully": "Company added successfully",
+    "errorAddingCompany": "Error adding company",
+    "deleteCompany": "Delete Company"
+  },
+  "permissions": {
+    "title": "Permissions",
+    "manageUsers": "Manage Users",
+    "manageReports": "Manage Reports",
+    "manageSubscription": "Manage Subscription",
+    "viewReports": "View Reports",
+    "ofUser": "Permissions of {{name}}:"
+  },
+  "packages": {
+    "popularChoice": "Most Popular",
+    "package": "Package",
+    "currency": "SAR",
+    "selectPackage": "Select Package",
+    "users": "Users",
+    "reportsMonthly": "Monthly Reports",
+    "mostPopular": "Most Popular",
+    "storage": "Storage",
+    "unlimited": "Unlimited",
+    "edit": "Edit",
+    "delete": "Delete",
+    "active": "Active",
+    "inactive": "Inactive",
+    "availablePackages": "Available Packages",
+    "addPackage": "Add Package",
+    "basic": "Basic Package",
+    "advanced": "Advanced Package",
+    "professional": "Professional Package",
+    "monthly": "Monthly",
+    "name": "Package Name",
+    "price": "Price (SAR)",
+    "period": "Subscription Period",
+    "yearly": "Yearly",
+    "reports": "Number of Reports",
+    "status": "Status",
+    "feature1": "Automatic report retrieval",
+    "feature2": "Manage up to 10 users",
+    "feature3": "Store reports for a full year",
+    "feature4": "24/7 technical support",
+    "feature5": "Advanced analytical reports",
+    "features": {
+      "autoReports": "Automatic report retrieval",
+      "manageUsers5": "Manage up to 5 users",
+      "manageUsers10": "Manage up to 10 users",
+      "manageUsersUnlimited": "Manage unlimited users",
+      "storage3Months": "Store reports for 3 months",
+      "storage1Year": "Store reports for one year",
+      "storage3Years": "Store reports for 3 years",
+      "emailSupport": "Email support",
+      "support24": "24/7 support",
+      "advancedReports": "Advanced analytical reports",
+      "api": "API access",
+      "fullCustomization": "Full system customization"
+    }
+  },
+  "chat": {
+    "title": "Live Chat",
+    "addReply": "Add Reply",
+    "ticketCreated": "Ticket Created",
+    "assignedTo": "Assigned To"
+  },
+  "ticket": {
+    "idPrefix": "Ticket",
+    "priority": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "status": {
+      "open": "Open",
+      "inProgress": "In Progress",
+      "resolved": "Resolved",
+      "unknown": "Unknown"
+    },
+    "actions": {
+      "edit": "Edit",
+      "close": "Close"
+    },
+    "companyUnknown": "Unknown"
+  },
+  "form": {
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Please sign in with your Mekyas account to access reports",
+      "footer": "This system is protected and intended for authorized users only.",
+      "testingNoteTitle": "Experimental data for testing:",
+      "testingUsername": "Username",
+      "testingPassword": "Password",
+      "verifyingTitle": "Verifying your credentials",
+      "verifyingText": "Validating your data with Mekyas...",
+      "verifyingButton": "Please wait, do not close this page.",
+      "successTitle": "Logged in successfully",
+      "successNote": "Your identity has been verified with Mekyas",
+      "redirect": "You will be redirected to the reports page"
+    }
+  },
+  "mekyas": {
+    "title": "Real Estate Reports",
+    "subtitle": "Manage the withdrawal and submission of real estate system reports",
+    "automatic": "Automatic Property Report Extraction",
+    "single": "Single Property Report",
+    "pullReport": {
+      "title": "Pull one property report",
+      "subtitle": "Search for a specific property report, extract it, and submit it to the Authority's system.",
+      "searchSection": "Search for the report",
+      "searchTitle": "Search for the report",
+      "searchHint": "Look up a report to begin",
+      "selectHint": "Find the report and select it to proceed.",
+      "lookupHint": "Select a report to follow up on.",
+      "disabledButton": "Select a report to follow up on.",
+      "referenceNumber": "Reference number",
+      "referencePlaceholder": "Enter the reference number (example: 065428)",
+      "reportName": "Report name",
+      "reportPlaceholder": "Enter the name of the report or part of it.",
+      "site": "The site",
+      "sitePlaceholder": "Enter the name of the city or region",
+      "propertyType": "Property type",
+      "types": {
+        "all": "All types",
+        "residential": "Residential villa",
+        "commercial": "Commercial office",
+        "industrial": "Industrial warehouse",
+        "apartment": "Residential apartment",
+        "store": "Commercial store",
+        "complex": "Investment complex",
+        "agriculture": "Agricultural land"
+      },
+      "searchButton": "Search for the report",
+      "clearButton": "Clear fields",
+      "instructions": "Find the report and select it to proceed.",
+      "emptyState": "Look up a report to begin",
+      "selectButton": "Select a report to follow up on."
+    },
+    "manual": {
+      "title": "Manually submit a report",
+      "subtitle": "Upload the property report files from your device to send them to the Authority’s system.",
+      "subtitle2": "Manually upload and send property reports to the Authority’s system",
+      "uploadExcel": "Drag Excel here or click to upload",
+      "uploadPdf": "Drag related PDFs here or click to upload",
+      "start": "Start extraction & sending",
+      "chooseFile": "Choose File",
+      "multiFilesHint": "You can upload multiple files at once.",
+      "submit": "Submit"
+    },
+    "stepper": {
+      "select": "Select Reports",
+      "verify": "Verify Reports",
+      "send": "Send Reports",
+      "result": "Result Reports"
+    },
+    "stepper2": {
+      "dataVerification": "Data Verification",
+      "preparingForms": "Preparing Forms",
+      "uploadingData": "Uploading Data",
+      "completed": "Completed"
+    },
+    "selectStep": {
+      "title": "Pull Property Reports",
+      "title2": "Automatic property report extraction",
+      "refresh": "Refresh",
+      "updatebutton": "Update From Scale",
+      "sendspecific":"Send specific reports",
+      "deleteselect":"Delete selected reports",
+      "description": "Select the reports you want to pull and send to the system",
+      "description2": "Select the property reports you wish to extract and have them automatically sent to the Authority's system.",
+      "description3": "Search for a specific property report by reference number, report name, or advanced search, then view details or send the report directly.",
+      "lastUpdated": "Last Updated",
+      "searchPlaceholder": "Search reports...",
+      "advancedSearch": "Advanced Search",
+      "reportName": "Report name",
+      "reportNamePlaceholder": "Search by report name...",
+      "site": "Site",
+      "sitePlaceholder": "Search by site...",
+      "propertyType": "Property type",
+      "propertyTypePlaceholder": "Search by property type...",
+      "condition": "Condition",
+      "conditions": {
+        "all": "All conditions",
+        "complete": "Complete",
+        "pending": "Pending",
+        "failed": "Failed"
+      },
+      "dateFrom": "From date",
+      "dateTo": "To date",
+      "clearFilters": "Clear filters",
+      "selectedCount": "Selected {{count}} reports",
+      "continue": "Continue to verify data"
+    },
+    "sendStep": {
+      "title": "Sending data",
+      "description": "Please wait until the data is sent to the system",
+      "stages": {
+        "withdraw": "Withdrawing data from the system...",
+        "verify": "Verifying data...",
+        "send": "Sending data to the system..."
+      },
+      "cancel": "Cancel process"
+    },
+    "resultStep": {
+      "title": "Result",
+      "success": {
+        "title": "Success",
+        "message": "{{count}} reports were sent successfully to the system",
+        "ref": "REF: {{ref}}",
+        "date": "Date: {{date}}"
+      },
+      "error": {
+        "title": "Error",
+        "message": "An error occurred while sending the data, please try again or contact technical support",
+        "code": "Error code: {{code}}",
+        "hint": "Please contact technical support and send the error code for assistance"
+      },
+      "back": "Back to Home"
+    }
+  },
+  "noqraReports": {
+    "title": "Noqra Reports",
+    "subtitle": "Manage real estate reports from Mekyas",
+    "comingSoonTitle": "Coming soon",
+    "comingSoonDescription": "We are currently working on the Noqra Reports feature. Stay tuned for updates."
+  },
+  "viewReports": {
+    "title": "View Reports",
+    "subtitle": "Track and monitor real estate reports from Mekyas",
+    "kpis": {
+      "totalReports": "Total reports",
+      "completed": "Completed",
+      "errors": "With errors",
+      "processing": "Processing",
+      "totalSize": "Total size",
+      "totalDownloads": "Total downloads",
+      "totalRecords": "Total records"
+    },
+    "table": {
+      "title": "Report Details",
+      "searchPlaceholder": "Search reports...",
+      "filter": "Filter",
+      "status": "Status",
+      "fileType": "File type",
+      "reset": "Reset",
+      "apply": "Apply",
+      "showing": "Showing {{shown}} of {{total}} reports"
+    },
+    "filters": {
+      "allStatuses": "All statuses",
+      "complete": "Complete",
+      "processing": "Processing",
+      "error": "Error",
+      "allTypes": "All types"
+    }
+  },
+  "reportTable": {
+    "id": "ID",
+    "reportName": "Report Name",
+    "reference": "Reference",
+    "presentedBy": "Presented By",
+    "propertyType": "Property Type",
+    "theSite": "The Site",
+    "area": "Area",
+    "value": "Value",
+    "priority": "Priority",
+    "theCondition": "Condition",
+    "theDate": "The Date",
+    "reportNumber": "Report Number",
+    "reportDetails": "Report Details",
+    "propertyAndLocation": "Property & Location",
+    "requiredAndCompany": "Required & Company",
+    "timingAndPerformance": "Timing & Performance",
+    "statistics": "Statistics",
+    "tracking": "Tracking",
+    "reportStatus": "Report Status",
+    "uploaded": "Uploaded",
+    "processing": "Processing",
+    "minutes": "minutes",
+    "lastModified": "Last Modified",
+    "status": {
+      "Open": "Open",
+      "In Progress": "In Progress",
+      "Complete": "Complete",
+      "Error": "Error",
+      "Processing": "Processing",
+      "readyToDownload": "Ready to download"
+    },
+    "fileType": {
+      "PDF": "PDF",
+      "XLSX": "XLSX",
+      "CSV": "CSV",
+      "ZIP": "ZIP"
+    },
+    "downloads": "Downloads",
+    "records": "Records",
+    "download": "Download",
+    "record": "Record",
+    "recordsCount": "{{count}} records",
+    "downloadCount": "{{count}} downloads",
+    "actions": {
+      "edit": "Edit",
+      "close": "Close"
+    },
+    "viewDetails": "View Details",
+    "viewMore": "View More",
+    "subjectDescription": "Subject and Description"
+  },
+  "taqeem": {
+    "loginButton": "Login" 
+  }
+}
