@@ -9,6 +9,7 @@ import GetTest from './features/Testing/pages/GetTest';
 import TaqeemLoginTest from './features/Testing/pages/TaqeemLoginTest';
 import NavigateUploadTest from './features/Testing/pages/NavigateUploadTest';
 import WithIDExcelTest from './features/Testing/pages/WithIDExcelTest';
+import ExcelPreviewer from './features/Testing/components/ExcelPreviewer';
 
 export function App() {
   return (
@@ -24,6 +25,7 @@ export function App() {
                     <Route path="/testing/get" element={<GetTest />} />
                     <Route path="/testing/navigate-upload" element={<NavigateUploadTest />} />
                   </Routes>
+                  <ExcelPreviewer/>
                 </Layout>
             </Router>
         </ProgressProvider>

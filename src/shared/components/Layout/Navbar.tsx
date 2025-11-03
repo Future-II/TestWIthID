@@ -69,9 +69,9 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
               /* Login Button - Show when NOT authenticated */
               <button
                 onClick={() => setAuthModalOpen(true)}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                className="flex items-center gap-2 bg-white text-white px-4 py-2 rounded-md hover:bg-white"
               >
-                <LogIn className="h-4 w-4" /> {t("Login")}
+                {/* <LogIn className="h-4 w-4" /> {t("Login")} */}
               </button>
             ) : (
               <>
