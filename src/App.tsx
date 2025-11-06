@@ -10,6 +10,7 @@ import AssetCreate from './features/Testing/pages/AssetCreate';
 import DeleteReport from './features/Testing/pages/DeleteReport';
 import GrabMacroIds from './features/Testing/pages/GrabMacroIds';
 import UpdateReportWithExcel from './features/Testing/pages/UpdateReportWithExcel';
+import AddCommonFields from './features/Testing/pages/AddCommonFields';
 
 export function App() {
   return (
@@ -25,6 +26,7 @@ export function App() {
                 <Route path='/testing/delete-report' element={<DeleteReport />} />
                 <Route path="/testing/grab-macro-ids" element={<GrabMacroIds />} />
                 <Route path="/testing/excel-upload" element={<UpdateReportWithExcel />} />
+                <Route path="/testing/add-other-fields" element={<AddCommonFields />} />
               </Routes>
             </Layout>
           </Router>

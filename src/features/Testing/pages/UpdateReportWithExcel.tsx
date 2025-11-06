@@ -6,7 +6,8 @@ import {
     Upload,
     FileCheck,
     AlertTriangle,
-    RefreshCw
+    RefreshCw,
+    Table
 } from "lucide-react";
 
 import { uploadAssetsToDB } from "../api";
@@ -64,14 +65,26 @@ const UpdateReportWithExcel: React.FC = () => {
 
             setUpdateResult(result);
 
-            if (result.status === "SUCCESS") {
+            // CORRECTED: Handle nested response structure
+            // Status is at result.data.status, not result.data.data.status
+            if (result?.data?.status === "SUCCESS") {
                 setSuccess(true);
             } else {
-                setError(result.error || 'Failed to update report');
+                // Handle different error scenarios
+                const errorMessage = result?.error ||
+                    result?.data?.error ||
+                    result?.message ||
+                    'Failed to update report';
+                setError(errorMessage);
             }
         } catch (err: any) {
             console.error("Error updating report:", err);
-            setError(err.message || 'An unexpected error occurred during report update');
+            // Handle API error response structure
+            const errorMessage = err.response?.data?.error ||
+                err.response?.data?.message ||
+                err.message ||
+                'An unexpected error occurred during report update';
+            setError(errorMessage);
         } finally {
             setIsUpdating(false);
         }
@@ -92,10 +105,22 @@ const UpdateReportWithExcel: React.FC = () => {
         setError("");
     };
 
+    // Format value for display
+    const formatValue = (value: any) => {
+        if (value === null || value === undefined) return '-';
+        if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+        if (typeof value === 'object') return JSON.stringify(value);
+        return String(value);
+    };
+
     if (success) {
+        // Get the report data from the correct nested structure
+        const reportData = updateResult?.data?.data;
+        const assetData = reportData?.asset_data || [];
+
         return (
             <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-8">
-                <div className="max-w-2xl mx-auto px-4">
+                <div className="max-w-7xl mx-auto px-4">
                     {/* Header */}
                     <div className="text-center mb-8">
                         <button
@@ -110,38 +135,138 @@ const UpdateReportWithExcel: React.FC = () => {
                     </div>
 
                     {/* Success Content */}
-                    <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-                        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <CheckCircle className="w-10 h-10 text-green-600" />
+                    <div className="bg-white rounded-2xl shadow-lg p-8">
+                        <div className="text-center mb-8">
+                            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <CheckCircle className="w-10 h-10 text-green-600" />
+                            </div>
+                            <h2 className="text-2xl font-semibold text-green-800 mb-2">Report Updated Successfully!</h2>
                         </div>
 
-                        <h2 className="text-2xl font-semibold text-green-800 mb-4">Report Updated Successfully!</h2>
-
-                        <div className="bg-gray-50 rounded-lg p-6 mb-6 text-left">
-                            <h3 className="font-medium text-gray-800 mb-4">Update Details:</h3>
-                            <div className="space-y-3">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">Report ID:</span>
-                                    <span className="font-medium">{reportId}</span>
+                        {/* Summary Section */}
+                        <div className="bg-gray-50 rounded-lg p-6 mb-8">
+                            <h3 className="font-medium text-gray-800 mb-4">Update Summary:</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                    <div className="text-sm text-gray-500">Report ID</div>
+                                    <div className="font-semibold text-gray-800">{reportId}</div>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">Excel File:</span>
-                                    <span className="font-medium">{excelFile?.name}</span>
+                                <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                    <div className="text-sm text-gray-500">Excel File</div>
+                                    <div className="font-semibold text-gray-800">{excelFile?.name}</div>
                                 </div>
-                                {updateResult?.data?.status && (
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Status:</span>
-                                        <span className="font-medium text-green-600">{updateResult.data.status}</span>
-                                    </div>
-                                )}
+                                <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                    <div className="text-sm text-gray-500">Assets Updated</div>
+                                    <div className="font-semibold text-green-600">{assetData.length}</div>
+                                </div>
+                                <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                    <div className="text-sm text-gray-500">Status</div>
+                                    <div className="font-semibold text-green-600">{updateResult?.data?.status}</div>
+                                </div>
                             </div>
                         </div>
 
-                        <p className="text-gray-600 mb-8">
-                            The report has been successfully updated with the new asset data from the Excel file.
-                        </p>
+                        {/* Report Data Table */}
+                        {reportData && (
+                            <div className="mb-8">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <Table className="w-5 h-5 text-blue-500" />
+                                    <h3 className="text-lg font-semibold text-gray-800">Report Details</h3>
+                                </div>
+                                <div className="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+                                    <div className="max-h-96 overflow-y-auto">
+                                        <table className="w-full">
+                                            <thead className="bg-gray-100 sticky top-0">
+                                                <tr>
+                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                                        Field
+                                                    </th>
+                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                                        Value
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-gray-200">
+                                                {Object.entries(reportData).map(([key, value]) => {
+                                                    // Skip asset_data as we'll show it separately
+                                                    if (key === 'asset_data') return null;
 
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                                    return (
+                                                        <tr key={key} className="hover:bg-gray-50">
+                                                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 capitalize">
+                                                                {key.replace(/_/g, ' ')}
+                                                            </td>
+                                                            <td className="px-4 py-3 text-sm text-gray-500 break-words">
+                                                                {formatValue(value)}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Asset Data Table */}
+                        {assetData.length > 0 && (
+                            <div className="mb-8">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <Table className="w-5 h-5 text-blue-500" />
+                                        <h3 className="text-lg font-semibold text-gray-800">
+                                            Asset Data ({assetData.length} assets)
+                                        </h3>
+                                    </div>
+                                    <div className="text-sm text-gray-500">
+                                        Scroll to view all data →
+                                    </div>
+                                </div>
+                                <div className="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+                                    <div className="max-h-96 overflow-x-auto overflow-y-auto">
+                                        <table className="min-w-full divide-y divide-gray-200">
+                                            <thead className="bg-gray-100 sticky top-0">
+                                                <tr>
+                                                    {assetData.length > 0 &&
+                                                        Object.keys(assetData[0]).map((key) => (
+                                                            <th
+                                                                key={key}
+                                                                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200 whitespace-nowrap"
+                                                            >
+                                                                {key.replace(/_/g, ' ')}
+                                                            </th>
+                                                        ))
+                                                    }
+                                                </tr>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-gray-200">
+                                                {assetData.map((asset: any, index: number) => (
+                                                    <tr key={asset._id || index} className="hover:bg-gray-50">
+                                                        {Object.entries(asset).map(([key, value]) => (
+                                                            <td
+                                                                key={key}
+                                                                className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap border-b border-gray-200"
+                                                            >
+                                                                <div className="max-w-xs truncate" title={formatValue(value)}>
+                                                                    {formatValue(value)}
+                                                                </div>
+                                                            </td>
+                                                        ))}
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-2">
+                                    Showing {assetData.length} assets. Scroll horizontally and vertically to view all data.
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6 border-t border-gray-200">
                             <button
                                 onClick={() => navigate("/equipment/viewReports")}
                                 className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
@@ -150,9 +275,15 @@ const UpdateReportWithExcel: React.FC = () => {
                             </button>
                             <button
                                 onClick={resetForm}
-                                className="px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg font-semibold transition-colors"
+                                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
                             >
                                 Update Another Report
+                            </button>
+                            <button
+                                onClick={() => navigate("/")}
+                                className="px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg font-semibold transition-colors"
+                            >
+                                Go Home
                             </button>
                         </div>
                     </div>

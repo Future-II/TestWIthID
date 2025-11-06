@@ -132,5 +132,16 @@ export const submitOTP = async (otp: string) => {
   }
 }
 
-
-
+export const addCommonFields = async (reportId: string, inspectionDate: any, region: string, city: string) => {
+  try {
+    const response = await api.post('/taqeemSubmission/add-common-fields', {
+      reportId: reportId.trim(),
+      inspectionDate,
+      region,
+      city,
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('Error adding common fields');
+  }
+};
