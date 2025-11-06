@@ -1,156 +1,37 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Upload,
-  FileCheck,
-  CheckCircle,
-  Save,
-  FileText,
-  RefreshCw,
-  ArrowLeft,
-  Download,
   Search,
-  Calendar,
-  Eye
+  CheckCircle,
+  ArrowLeft,
+  FileCheck,
 } from "lucide-react";
-import * as XLSX from "xlsx";
 
-import { uploadAssetsToDB, validateExcelData } from "../api";
-import {
-  ValidationError,
-  ValidationResults,
-  validateIDExcelData
-} from "../utils/validations";
-import { readExcelFile, downloadCorrectedExcel } from "../utils/excelUtils";
-
+import { validateExcelData } from "../api";
 import ProgressIndicator from "../components/ProgressIndicator";
 import StepHeader from "../components/StepHeader";
-import FileUpload from "../components/FileUpload";
-import CheckResult from "../components/CheckResult";
-import NavigationButtons from "../components/NavigationButtons";
-import LoadingSpinner from "../components/LoadingSpinner";
-import SuccessState from "../components/SuccessState";
 import { useTaqeemAuth } from "../../../shared/context/TaqeemAuthContext";
-
-interface ExcelRow {
-  [key: string]: string | number | boolean | null;
-}
 
 const WithIDExcelTest: React.FC = () => {
   const navigate = useNavigate();
 
-  // Step management - completely new flow
-  const [currentStep, setCurrentStep] = useState<
-    'report-id-check' | 'excel-upload' | 'excel-validation' | 'upload-to-db' | 'success'
-  >('report-id-check');
+  // Step management - simplified to only report check
+  const [currentStep, setCurrentStep] = useState<'report-id-check' | 'success'>('report-id-check');
 
-  // Files & data
-  const [excelFile, setExcelFile] = useState<File | null>(null);
-  const [excelDataSheets, setExcelDataSheets] = useState<any[][][]>([]);
+  // Report ID state
   const [reportId, setReportId] = useState("");
   const [reportExists, setReportExists] = useState<boolean | null>(null);
   const [isCheckingReport, setIsCheckingReport] = useState(false);
   const { isLoggedIn } = useTaqeemAuth();
 
-  // New form fields
-  const [region, setRegion] = useState("");
-  const [city, setCity] = useState("");
-  const [inspectionDate, setInspectionDate] = useState("");
-
-  // Validation state
-  const [validationResults, setValidationResults] = useState<ValidationResults>({
-    hasEmptyFields: false,
-    hasFractionInFinalValue: false,
-    hasInvalidPurposeId: false,
-    hasInvalidValuePremiseId: false,
-    hasMissingRequiredHeaders: false,
-    isReportValueValid: true,
-    totalErrors: 0
-  });
-
-  const [excelErrors, setExcelErrors] = useState<ValidationError[]>([]);
-  const [isValidating, setIsValidating] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  // Error state
   const [error, setError] = useState("");
 
-  // Excel Preview State
-  const [workbook, setWorkbook] = useState<XLSX.WorkBook | null>(null);
-  const [sheets, setSheets] = useState<string[]>([]);
-  const [selectedSheet, setSelectedSheet] = useState<string>("");
-  const [previewData, setPreviewData] = useState<ExcelRow[]>([]);
-  const [columns, setColumns] = useState<string[]>([]);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-
-  // Sample data for dropdowns - replace with your actual data
-  const regions = [
-    "منطقة الرياض"
-  ];
-
-  const citiesByRegion: { [key: string]: string[] } = {
-    "منطقة الرياض": ["الرياض", "الدرعية", "الخرج", "المجمعة", "رماح"]
-  };
-
-  // Step definitions for progress indicator - updated order
+  // Step definitions for progress indicator - simplified
   const steps = [
     { step: 'report-id-check', label: 'Report ID Check', icon: Search },
-    { step: 'excel-upload', label: 'Excel Upload', icon: Upload },
-    { step: 'excel-validation', label: 'Excel Validation', icon: FileCheck },
-    { step: 'upload-to-db', label: 'Upload to DB', icon: Save },
     { step: 'success', label: 'Success', icon: CheckCircle }
   ];
-
-  // 🔹 Clean parsed data (remove empty rows and columns)
-  const cleanData = (rows: ExcelRow[]): ExcelRow[] => {
-    const filteredRows = rows.filter((row) =>
-      Object.values(row).some(
-        (val) => val !== "" && val !== null && val !== undefined
-      )
-    );
-
-    const allKeys = new Set<string>();
-    filteredRows.forEach((row) => {
-      Object.keys(row).forEach((key) => {
-        const val = row[key];
-        if (typeof val === "string") row[key] = val.trim();
-        if (row[key] !== "") allKeys.add(key);
-      });
-    });
-
-    return filteredRows.map((row) => {
-      const newRow: ExcelRow = {};
-      allKeys.forEach((key) => (newRow[key] = row[key] ?? ""));
-      return newRow;
-    });
-  };
-
-  // 🔹 Load data for a selected sheet
-  const loadSheetData = (sheetName: string, wb: XLSX.WorkBook) => {
-    const worksheet = wb.Sheets[sheetName];
-    const jsonData: ExcelRow[] = XLSX.utils.sheet_to_json(worksheet, {
-      defval: "",
-    });
-
-    const cleaned = cleanData(jsonData);
-    setColumns(cleaned.length > 0 ? Object.keys(cleaned[0]) : []);
-    setPreviewData(cleaned);
-    setSelectedSheet(sheetName);
-  };
-
-  // 🔹 Open Excel Preview
-  const openExcelPreview = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const binaryStr = event.target?.result;
-      if (!binaryStr) return;
-
-      const wb = XLSX.read(binaryStr, { type: "binary" });
-      setWorkbook(wb);
-      setSheets(wb.SheetNames);
-      loadSheetData(wb.SheetNames[0], wb);
-      setIsPreviewOpen(true);
-    };
-    reader.readAsBinaryString(file);
-  };
 
   // Step 1: Check Report ID
   const handleCheckReport = async () => {
@@ -174,6 +55,7 @@ const WithIDExcelTest: React.FC = () => {
       } else if (result.data?.status === 'SUCCESS') {
         setReportExists(true);
         setError("");
+        setCurrentStep('success');
       } else if (result.data?.status === 'MACROS_EXIST') {
         setReportExists(false);
         setError("Only works on reports with no macros. Please use a different report ID.");
@@ -198,147 +80,13 @@ const WithIDExcelTest: React.FC = () => {
     }
   };
 
-  // Step 2: Excel File Upload
-  const handleExcelUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files && files[0]) {
-      const file = files[0];
-      setExcelFile(file);
-      setError("");
-      try {
-        const sheetsData = await readExcelFile(file);
-
-        // Validate that we have exactly 2 sheets for ID test
-        if (sheetsData.length !== 2) {
-          setError("ID Excel test requires exactly 2 sheets. Please use the correct template.");
-          return;
-        }
-
-        setExcelDataSheets(sheetsData);
-
-        // Automatically open preview when validation is successful
-        if (sheetsData.length === 2) {
-          openExcelPreview(file);
-        }
-      } catch (err) {
-        console.error(err);
-        setError("Error reading Excel file. Please make sure the file is valid.");
-      }
-    }
-  };
-
-  // Step 3: Validate Excel File - Using ID-specific validation
-  const handleValidateExcel = async () => {
-    if (!excelFile || !excelDataSheets.length) return;
-
-    setIsValidating(true);
-
-    setTimeout(() => {
-      // Use ID-specific validation that expects only 2 sheets
-      const { errors, results } = validateIDExcelData(excelDataSheets);
-
-      setExcelErrors(errors);
-      setValidationResults(results);
-      setIsValidating(false);
-
-      if (errors.length === 0) {
-        setCurrentStep('upload-to-db');
-      }
-    }, 1500);
-  };
-
-  // Step 4: Upload to DB
-  const handleUploadToDB = async () => {
-    if (!excelFile || !reportId.trim() || !region || !city || !inspectionDate) {
-      setError("All fields are required");
-      return;
-    }
-
-    try {
-      setIsUploading(true);
-      setError("");
-
-      // Upload to DB with all required fields
-      const response = await uploadAssetsToDB(
-        reportId,
-        excelFile,
-        region,
-        city,
-        inspectionDate
-      );
-
-      console.log("Upload response:", response);
-
-      if (response.data?.status === "SUCCESS") {
-        setCurrentStep('success');
-      } else {
-        setError("Failed to save report. Please try again.");
-      }
-
-    } catch (error: any) {
-      console.error("Error:", error);
-      setError(error.message || "Error during upload. Please try again.");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  // Download corrected file
-  const handleDownloadCorrectedExcel = () => {
-    downloadCorrectedExcel(excelDataSheets, excelErrors, "corrected_report.xlsx");
-  };
-
-  // Reset validation state
-  const resetValidationState = () => {
-    setExcelErrors([]);
-    setValidationResults({
-      hasEmptyFields: false,
-      hasFractionInFinalValue: false,
-      hasInvalidPurposeId: false,
-      hasInvalidValuePremiseId: false,
-      hasMissingRequiredHeaders: false,
-      isReportValueValid: true,
-      totalErrors: 0
-    });
-    setCurrentStep('excel-upload');
-  };
-
-  // Reset entire process
+  // Reset process
   const resetProcess = () => {
     setCurrentStep('report-id-check');
-    setExcelFile(null);
-    setExcelDataSheets([]);
-    setExcelErrors([]);
     setReportId("");
     setReportExists(null);
-    setRegion("");
-    setCity("");
-    setInspectionDate("");
     setError("");
   };
-
-  // Download template
-  const handleDownloadTemplate = () => {
-    // This would download the ID.xlsx template file with 2 sheets
-    window.open("/ID.xlsx", "_blank");
-  };
-
-  // Get current date in YYYY-MM-DD format for max date
-  const getCurrentDate = () => {
-    return new Date().toISOString().split('T')[0];
-  };
-
-  // Get date 10 years ago for min date (reasonable range)
-  const getMinDate = () => {
-    const date = new Date();
-    date.setFullYear(date.getFullYear() - 10);
-    return date.toISOString().split('T')[0];
-  };
-
-  const isExcelValid = excelErrors.length === 0;
-
-  // Get cities based on selected region
-  const availableCities = region ? citiesByRegion[region] || [] : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
@@ -352,8 +100,8 @@ const WithIDExcelTest: React.FC = () => {
             <ArrowLeft className="w-4 h-4" />
             Back
           </button>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">📊 Equipment Report with ID</h1>
-          <p className="text-gray-600">Upload and validate Excel reports with report ID (2 sheets required)</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">🔍 Report ID Verification</h1>
+          <p className="text-gray-600">Check if a report ID exists in the system</p>
         </div>
 
         {/* Progress Indicator */}
@@ -393,16 +141,11 @@ const WithIDExcelTest: React.FC = () => {
                       disabled={!reportId.trim() || isCheckingReport || !isLoggedIn}
                       className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-semibold flex items-center gap-2 transition-colors"
                     >
-                      {isCheckingReport ? (
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Search className="w-4 h-4" />
-                      )}
                       {isCheckingReport ? "Checking..." : "Check Report"}
                     </button>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Enter the report ID to verify it exists before proceeding
+                    Enter the report ID to verify it exists in the system
                   </p>
                 </div>
 
@@ -414,17 +157,23 @@ const WithIDExcelTest: React.FC = () => {
                       <div>
                         <p className="font-medium text-green-800">Report Found</p>
                         <p className="text-sm text-green-600">
-                          Report ID <strong>{reportId}</strong> exists. You can proceed to upload the Excel file.
+                          Report ID <strong>{reportId}</strong> exists in the system.
                         </p>
                       </div>
                     </div>
-                    <div className="mt-4 text-center">
-                      <button
-                        onClick={() => setCurrentStep('excel-upload')}
-                        className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
-                      >
-                        Continue to Excel Upload
-                      </button>
+                  </div>
+                )}
+
+                {reportExists === false && !error && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <FileCheck className="w-5 h-5 text-yellow-500" />
+                      <div>
+                        <p className="font-medium text-yellow-800">Report Not Found</p>
+                        <p className="text-sm text-yellow-600">
+                          Please check the report ID and try again.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -438,329 +187,32 @@ const WithIDExcelTest: React.FC = () => {
                   </div>
                 )}
               </div>
-            </div>
-          )}
 
-          {/* Step 2: Excel Upload */}
-          {currentStep === 'excel-upload' && (
-            <div className="space-y-6">
-              <StepHeader
-                icon={Upload}
-                title="Upload Excel File"
-                description="Upload your Excel file with 2 asset sheets for report validation"
-                iconColor="text-blue-500"
-              />
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                <div className="flex items-center gap-3">
-                  <FileText className="w-5 h-5 text-blue-500" />
+              {/* Information Box */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-blue-600 text-sm">ℹ️</span>
+                  </div>
                   <div>
-                    <p className="font-medium text-blue-800">Report ID: {reportId}</p>
-                    <p className="text-sm text-blue-600">Upload the corresponding Excel file for this report</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* New Form Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {/* Region Dropdown */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Region *
-                  </label>
-                  <select
-                    value={region}
-                    onChange={(e) => {
-                      setRegion(e.target.value);
-                      setCity(""); // Reset city when region changes
-                    }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  >
-                    <option value="">Select Region</option>
-                    {regions.map((regionOption) => (
-                      <option key={regionOption} value={regionOption}>
-                        {regionOption}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* City Dropdown */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    City *
-                  </label>
-                  <select
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    disabled={!region}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  >
-                    <option value="">Select City</option>
-                    {availableCities.map((cityOption) => (
-                      <option key={cityOption} value={cityOption}>
-                        {cityOption}
-                      </option>
-                    ))}
-                  </select>
-                  {!region && (
-                    <p className="text-xs text-gray-500 mt-1">Please select a region first</p>
-                  )}
-                </div>
-
-                {/* Enhanced Inspection Date Picker */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Inspection Date *
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="date"
-                      value={inspectionDate}
-                      onChange={(e) => setInspectionDate(e.target.value)}
-                      min={getMinDate()}
-                      max={getCurrentDate()}
-                      className="w-full px-4 py-3 pl-4 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors appearance-none"
-                      placeholder="Select inspection date"
-                    />
-                    <Calendar className="absolute right-3 top-3.5 h-5 w-5 text-gray-400 pointer-events-none" />
-                  </div>
-                  <div className="flex justify-between mt-1">
-                    <p className="text-xs text-gray-500">
-                      Select the date when the inspection was conducted
+                    <p className="font-medium text-blue-800 mb-1">About This Page</p>
+                    <p className="text-sm text-blue-600">
+                      This page is dedicated to verifying report IDs in the system.
+                      It only checks whether a report exists and does not handle file uploads or data processing.
                     </p>
-                    {inspectionDate && (
-                      <p className="text-xs text-blue-600 font-medium">
-                        Selected: {new Date(inspectionDate).toLocaleDateString()}
-                      </p>
-                    )}
                   </div>
                 </div>
               </div>
-
-              <div className="text-center mb-4">
-                <button
-                  onClick={handleDownloadTemplate}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Download Template
-                </button>
-                <p className="text-xs text-gray-500 mt-2">Download the Excel template with 2 required sheets</p>
-              </div>
-
-              <FileUpload
-                label="Excel File (2 sheets)"
-                accept=".xlsx,.xls"
-                onFileChange={handleExcelUpload}
-                file={excelFile}
-                description="Upload Excel file with 2 asset sheets"
-              />
-
-              {/* Preview Button - Show when file is uploaded but not yet validated */}
-              {excelFile && (
-                <div className="text-center">
-                  <button
-                    onClick={() => openExcelPreview(excelFile)}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
-                  >
-                    <Eye className="w-4 h-4" />
-                    Preview Excel File
-                  </button>
-                </div>
-              )}
-
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <div className="flex items-center gap-3">
-                    <FileCheck className="w-5 h-5 text-red-500" />
-                    <span className="text-red-700">{error}</span>
-                  </div>
-                </div>
-              )}
-
-              <NavigationButtons
-                onBack={() => setCurrentStep('report-id-check')}
-                onNext={() => excelFile && setCurrentStep('excel-validation')}
-                nextLabel="Continue to Validation"
-                backLabel="Back to Report Check"
-                nextDisabled={!excelFile || !region || !city || !inspectionDate}
-              />
             </div>
           )}
 
-          {/* Step 3: Excel Validation */}
-          {currentStep === 'excel-validation' && (
-            <div className="space-y-6">
-              <StepHeader
-                icon={FileCheck}
-                title="Validate Excel File"
-                description="Check your 2-sheet Excel file for errors before uploading to database"
-                iconColor="text-yellow-500"
-              />
-
-              {excelFile && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex items-center gap-3">
-                    <FileText className="w-5 h-5 text-blue-500" />
-                    <div>
-                      <p className="font-medium text-blue-800">Current file</p>
-                      <p className="text-sm text-blue-600">{excelFile.name}</p>
-                      <p className="text-xs text-blue-500 mt-1">
-                        Sheets: {excelDataSheets.length} (Sheet 1 & Sheet 2)
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Preview button in validation step */}
-                  <div className="mt-3 text-center">
-                    <button
-                      onClick={() => openExcelPreview(excelFile)}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
-                    >
-                      <Eye className="w-4 h-4" />
-                      Preview Excel File
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Show validation button only when not validating and no results yet */}
-              {!isValidating && excelErrors.length === 0 && (
-                <div className="text-center space-y-4">
-                  <button
-                    onClick={handleValidateExcel}
-                    disabled={!excelFile}
-                    className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-semibold flex items-center gap-2 mx-auto transition-colors"
-                  >
-                    <FileCheck className="w-4 h-4" />
-                    Start Validation
-                  </button>
-
-                  <button
-                    onClick={() => setCurrentStep('excel-upload')}
-                    className="px-6 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors"
-                  >
-                    Upload Different File
-                  </button>
-                </div>
-              )}
-
-              {isValidating && (
-                <LoadingSpinner message="Validating Excel file..." />
-              )}
-
-              {/* Validation Results */}
-              {!isValidating && excelErrors.length > 0 && (
-                <CheckResult
-                  results={validationResults}
-                  errorCount={excelErrors.length}
-                  onDownloadCorrected={handleDownloadCorrectedExcel}
-                  onUploadNew={resetValidationState}
-                />
-              )}
-
-              {/* Success State */}
-              {!isValidating && isExcelValid && excelErrors.length === 0 && validationResults.totalErrors === 0 && (
-                <SuccessState
-                  title="Validation Successful"
-                  message="No errors found in your 2-sheet Excel file"
-                  actionLabel="Continue to Upload"
-                  onAction={() => setCurrentStep('upload-to-db')}
-                />
-              )}
-            </div>
-          )}
-
-          {/* Step 4: Upload to DB */}
-          {currentStep === 'upload-to-db' && (
-            <div className="space-y-6">
-              <StepHeader
-                icon={Save}
-                title="Upload to Database"
-                description="Complete the process by uploading the validated report to the database"
-                iconColor="text-green-500"
-              />
-
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                <div className="flex justify-between items-center py-2 border-b">
-                  <span className="font-medium">Report ID:</span>
-                  <span className="text-green-600 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4" />
-                    {reportId}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b">
-                  <span className="font-medium">Excel File:</span>
-                  <span className="text-green-600 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4" />
-                    {excelFile?.name}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b">
-                  <span className="font-medium">Region:</span>
-                  <span className="text-green-600 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4" />
-                    {region}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b">
-                  <span className="font-medium">City:</span>
-                  <span className="text-green-600 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4" />
-                    {city}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="font-medium">Inspection Date:</span>
-                  <span className="text-green-600 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4" />
-                    {inspectionDate ? new Date(inspectionDate).toLocaleDateString() : 'Not set'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Preview button in upload step */}
-              {excelFile && (
-                <div className="text-center">
-                  <button
-                    onClick={() => openExcelPreview(excelFile)}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors mb-4"
-                  >
-                    <Eye className="w-4 h-4" />
-                    Preview Excel File Before Upload
-                  </button>
-                </div>
-              )}
-
-              <NavigationButtons
-                onBack={() => setCurrentStep('excel-validation')}
-                onNext={handleUploadToDB}
-                nextLabel={isUploading ? "Saving..." : "Save and Submit Later"}
-                backLabel="Back to Validation"
-                nextDisabled={!excelFile || !reportId.trim() || isUploading}
-                nextIcon={isUploading ? RefreshCw : Save}
-                showSubmitNow={true}
-              />
-
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <div className="flex items-center gap-3">
-                    <FileCheck className="w-5 h-5 text-red-500" />
-                    <span className="text-red-700">{error}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Step 5: Success */}
+          {/* Step 2: Success */}
           {currentStep === 'success' && (
             <div className="space-y-6">
               <StepHeader
                 icon={CheckCircle}
-                title="Success!"
-                description="Your equipment report has been saved successfully"
+                title="Report Verified Successfully!"
+                description="The report ID has been verified and exists in the system"
                 iconColor="text-green-500"
               />
 
@@ -768,9 +220,11 @@ const WithIDExcelTest: React.FC = () => {
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
-                <h3 className="text-xl font-semibold text-green-800 mb-2">Report Saved Successfully!</h3>
+                <h3 className="text-xl font-semibold text-green-800 mb-2">Report Verified!</h3>
                 <p className="text-green-600 mb-2">Report ID: <strong>{reportId}</strong></p>
-                <p className="text-green-600 mb-4">The equipment report with 2 asset sheets has been successfully processed and saved in the system.</p>
+                <p className="text-green-600 mb-4">
+                  The report has been successfully verified and exists in the system.
+                </p>
 
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <button
@@ -783,7 +237,7 @@ const WithIDExcelTest: React.FC = () => {
                     onClick={resetProcess}
                     className="px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg font-semibold transition-colors"
                   >
-                    Start New Report
+                    Check Another Report
                   </button>
                 </div>
               </div>
@@ -791,77 +245,6 @@ const WithIDExcelTest: React.FC = () => {
           )}
         </div>
       </div>
-
-      {/* 🔹 Excel Preview Modal */}
-      {isPreviewOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white w-11/12 max-w-6xl rounded-lg shadow-lg overflow-hidden">
-            {/* Modal Header */}
-            <div className="flex justify-between items-center px-4 py-3 border-b bg-gray-100">
-              <h2 className="text-lg font-semibold">Excel Preview - {excelFile?.name}</h2>
-              <button
-                onClick={() => setIsPreviewOpen(false)}
-                className="text-gray-500 hover:text-gray-700 text-xl"
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Sheet Tabs */}
-            <div className="flex border-b overflow-x-auto">
-              {sheets.map((sheet) => (
-                <button
-                  key={sheet}
-                  onClick={() => workbook && loadSheetData(sheet, workbook)}
-                  className={`px-4 py-2 text-sm font-medium border-b-2 ${sheet === selectedSheet
-                    ? "border-blue-500 text-blue-600"
-                    : "border-transparent text-gray-600 hover:text-blue-600"
-                    }`}
-                >
-                  {sheet}
-                </button>
-              ))}
-            </div>
-
-            {/* Data Table */}
-            <div className="max-h-[70vh] overflow-auto p-4">
-              {previewData.length > 0 ? (
-                <table className="min-w-full text-sm border">
-                  <thead className="bg-gray-100 sticky top-0">
-                    <tr>
-                      {columns.map((col) => (
-                        <th key={col} className="px-3 py-2 border-b font-medium text-left">
-                          {col}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {previewData.map((row, i) => (
-                      <tr key={i} className="even:bg-gray-50">
-                        {columns.map((col) => (
-                          <td key={col} className="px-3 py-2 border-b">
-                            {String(row[col] ?? "")}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <p className="text-gray-500 text-center mt-4">
-                  No data available for this sheet.
-                </p>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="p-3 border-t text-center text-sm text-gray-500">
-              {previewData.length} rows loaded • Sheet: {selectedSheet}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

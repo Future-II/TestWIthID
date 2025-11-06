@@ -13,44 +13,30 @@ import {
 
 import { validateExcelData, createAssets } from "../api";
 
-import ProgressIndicator from "../components/ProgressIndicator";
-import StepHeader from "../components/StepHeader";
-import NavigationButtons from "../components/NavigationButtons";
 import { useTaqeemAuth } from "../../../shared/context/TaqeemAuthContext";
 
 const AssetCreate: React.FC = () => {
     const navigate = useNavigate();
     const { isLoggedIn } = useTaqeemAuth();
 
-    // Step management
-    const [currentStep, setCurrentStep] = useState<
-        'report-id-check' | 'asset-configuration' | 'creation-in-progress' | 'success' | 'error'
-    >('report-id-check');
-
-    // Report ID state
+    // Form state
     const [reportId, setReportId] = useState("");
-    const [reportExists, setReportExists] = useState<boolean | null>(null);
-    const [isCheckingReport, setIsCheckingReport] = useState(false);
-
-
-    // Asset configuration state
     const [tabsInput, setTabsInput] = useState("");
     const [assetCount, setAssetCount] = useState("");
     const [error, setError] = useState("");
-
-    // Asset creation state
-    const [isCreatingAssets, setIsCreatingAssets] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [creationResult, setCreationResult] = useState<any>(null);
+    const [isSuccess, setIsSuccess] = useState(false);
 
-    // Step definitions for progress indicator
-    const steps = [
-        { step: 'report-id-check', label: 'Report ID Check', icon: Search },
-        { step: 'asset-configuration', label: 'Asset Configuration', icon: Plus },
-        { step: 'creation-in-progress', label: 'Creation', icon: Play },
-        { step: 'success', label: 'Success', icon: CheckCircle }
-    ];
+    // Report validation state
+    const [isCheckingReport, setIsCheckingReport] = useState(false);
+    const [reportExists, setReportExists] = useState<boolean | null>(null);
 
-    // Step 1: Check Report ID
+    // Check if form is valid
+    const isFormValid = reportId.trim() && tabsInput.trim() && assetCount.trim();
+    const canCreateAssets = isFormValid && reportExists === true;
+
+    // Handle report validation
     const handleCheckReport = async () => {
         if (!reportId.trim()) {
             setError("Please enter a report ID");
@@ -96,10 +82,10 @@ const AssetCreate: React.FC = () => {
         }
     };
 
-    // Step 2: Handle asset creation
+    // Handle asset creation
     const handleCreateAssets = async () => {
-        if (!tabsInput.trim() || !assetCount.trim()) {
-            setError("Both fields are required");
+        if (!canCreateAssets) {
+            setError("Please complete all fields and verify the report ID first");
             return;
         }
 
@@ -112,8 +98,7 @@ const AssetCreate: React.FC = () => {
         const tabsNum = parseInt(tabsInput) || 3;
 
         setError("");
-        setIsCreatingAssets(true);
-        setCurrentStep('creation-in-progress');
+        setIsLoading(true);
 
         try {
             console.log(`Creating assets for report: ${reportId}, count: ${count}, tabs: ${tabsNum}`);
@@ -124,38 +109,36 @@ const AssetCreate: React.FC = () => {
             setCreationResult(result);
 
             if (result.success) {
-                setCurrentStep('success');
+                setIsSuccess(true);
             } else if (result.stopped) {
                 setError(result.message || 'Asset creation was stopped by user');
-                setCurrentStep('error');
             } else {
                 setError(result.error || 'Failed to create assets');
-                setCurrentStep('error');
             }
         } catch (err: any) {
             console.error("Error creating assets:", err);
             setError(err.message || 'An unexpected error occurred during asset creation');
-            setCurrentStep('error');
         } finally {
-            setIsCreatingAssets(false);
+            setIsLoading(false);
         }
     };
 
     // Reset process
     const resetProcess = () => {
-        setCurrentStep('report-id-check');
         setReportId("");
-        setReportExists(null);
         setTabsInput("");
         setAssetCount("");
         setError("");
-        setIsCreatingAssets(false);
+        setIsLoading(false);
         setCreationResult(null);
+        setIsSuccess(false);
+        setReportExists(null);
+        setIsCheckingReport(false);
     };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-            <div className="max-w-4xl mx-auto px-4">
+            <div className="max-w-2xl mx-auto px-4">
                 {/* Header */}
                 <div className="text-center mb-8">
                     <button
@@ -169,24 +152,77 @@ const AssetCreate: React.FC = () => {
                     <p className="text-gray-600">Create new assets for an existing report</p>
                 </div>
 
-                {/* Progress Indicator */}
-                <ProgressIndicator currentStep={currentStep} steps={steps} />
-
                 {/* Main Content Area */}
                 <div className="bg-white rounded-2xl shadow-lg p-6">
-                    {/* Step 1: Report ID Check */}
-                    {currentStep === 'report-id-check' && (
+                    {isSuccess ? (
+                        /* Success State */
                         <div className="space-y-6">
-                            <StepHeader
-                                icon={Search}
-                                title="Check Report ID"
-                                description="Enter the report ID to verify it exists in the system"
-                                iconColor="text-blue-500"
-                            />
+                            <div className="text-center">
+                                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <CheckCircle className="w-8 h-8 text-green-600" />
+                                </div>
+                                <h2 className="text-2xl font-bold text-green-800 mb-2">Success!</h2>
+                                <p className="text-green-600 mb-4">Your assets have been created successfully</p>
+                            </div>
 
-                            <div className="space-y-4">
+                            <div className="bg-green-50 border border-green-200 rounded-xl p-6">
+                                <h3 className="text-xl font-semibold text-green-800 mb-4 text-center">Assets Created Successfully!</h3>
+                                <p className="text-green-600 mb-2 text-center">Report ID: <strong>{reportId}</strong></p>
+
+                                <div className="bg-white rounded-lg p-4 max-w-md mx-auto mb-4">
+                                    <h4 className="font-medium text-gray-800 mb-3 text-center">Creation Details:</h4>
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">Tabs:</span>
+                                            <span className="font-medium">{tabsInput}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-600">Asset Count:</span>
+                                            <span className="font-medium">{assetCount}</span>
+                                        </div>
+                                        {creationResult?.data?.status && (
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-600">Status:</span>
+                                                <span className="font-medium text-green-600">{creationResult.data.status}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <p className="text-green-600 mb-6 text-center">The assets have been successfully created and added to your report.</p>
+
+                                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                    <button
+                                        onClick={() => navigate("/equipment/viewReports")}
+                                        className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
+                                    >
+                                        View Reports
+                                    </button>
+                                    <button
+                                        onClick={resetProcess}
+                                        className="px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg font-semibold transition-colors"
+                                    >
+                                        Create New Assets
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        /* Main Form */
+                        <div className="space-y-6">
+                            <div className="text-center mb-6">
+                                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <Plus className="w-6 h-6 text-blue-600" />
+                                </div>
+                                <h2 className="text-2xl font-bold text-gray-800 mb-2">Create Assets</h2>
+                                <p className="text-gray-600">Enter the report details to create new assets</p>
+                            </div>
+
+                            <div className="space-y-6">
+                                {/* Report ID Input with Check Button */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <Search className="w-4 h-4 inline mr-1" />
                                         Report ID *
                                     </label>
                                     <div className="flex gap-3">
@@ -195,16 +231,17 @@ const AssetCreate: React.FC = () => {
                                             value={reportId}
                                             onChange={(e) => {
                                                 setReportId(e.target.value);
-                                                setReportExists(null);
+                                                setReportExists(null); // Reset validation when ID changes
                                                 setError("");
                                             }}
                                             className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                             placeholder="Enter existing report ID"
+                                            disabled={isLoading}
                                         />
                                         <button
                                             onClick={handleCheckReport}
-                                            disabled={!reportId.trim() || isCheckingReport || !isLoggedIn}
-                                            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-semibold flex items-center gap-2 transition-colors"
+                                            disabled={!reportId.trim() || isCheckingReport || isLoading || !isLoggedIn}
+                                            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-semibold flex items-center gap-2 transition-colors whitespace-nowrap"
                                         >
                                             {isCheckingReport ? (
                                                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -215,66 +252,33 @@ const AssetCreate: React.FC = () => {
                                         </button>
                                     </div>
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Enter the report ID to verify it exists before proceeding
+                                        Enter the report ID and verify it exists before creating assets
                                     </p>
-                                </div>
 
-                                {/* Report Existence Status */}
-                                {reportExists === true && (
-                                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                                        <div className="flex items-center gap-3">
-                                            <CheckCircle className="w-5 h-5 text-green-500" />
-                                            <div>
-                                                <p className="font-medium text-green-800">Report Found</p>
-                                                <p className="text-sm text-green-600">
-                                                    Report ID <strong>{reportId}</strong> exists. You can proceed to configure assets.
-                                                </p>
+                                    {/* Report Validation Status */}
+                                    {reportExists === true && (
+                                        <div className="mt-3 bg-green-50 border border-green-200 rounded-lg p-3">
+                                            <div className="flex items-center gap-2">
+                                                <CheckCircle className="w-4 h-4 text-green-500" />
+                                                <span className="text-green-700 text-sm font-medium">
+                                                    Report verified successfully
+                                                </span>
                                             </div>
                                         </div>
-                                        <div className="mt-4 text-center">
-                                            <button
-                                                onClick={() => setCurrentStep('asset-configuration')}
-                                                className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
-                                            >
-                                                Continue to Asset Configuration
-                                            </button>
+                                    )}
+
+                                    {reportExists === false && (
+                                        <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3">
+                                            <div className="flex items-center gap-2">
+                                                <FileText className="w-4 h-4 text-red-500" />
+                                                <span className="text-red-700 text-sm">
+                                                    Report not found or invalid
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-
-                                {error && (
-                                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                                        <div className="flex items-center gap-3">
-                                            <FileText className="w-5 h-5 text-red-500" />
-                                            <span className="text-red-700">{error}</span>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Step 2: Asset Configuration */}
-                    {currentStep === 'asset-configuration' && (
-                        <div className="space-y-6">
-                            <StepHeader
-                                icon={Plus}
-                                title="Asset Configuration"
-                                description="Configure the tabs and asset count for your report"
-                                iconColor="text-purple-500"
-                            />
-
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                                <div className="flex items-center gap-3">
-                                    <FileText className="w-5 h-5 text-blue-500" />
-                                    <div>
-                                        <p className="font-medium text-blue-800">Report ID: {reportId}</p>
-                                        <p className="text-sm text-blue-600">Configure the asset details for this report</p>
-                                    </div>
+                                    )}
                                 </div>
-                            </div>
 
-                            <div className="space-y-6">
                                 {/* Tabs Input */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -292,6 +296,7 @@ const AssetCreate: React.FC = () => {
                                         max="10"
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
                                         placeholder="Enter number of tabs (default: 3)"
+                                        disabled={isLoading}
                                     />
                                     <p className="text-xs text-gray-500 mt-1">
                                         Specify the number of tabs to create (usually 3)
@@ -314,6 +319,7 @@ const AssetCreate: React.FC = () => {
                                         min="1"
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
                                         placeholder="Enter number of assets"
+                                        disabled={isLoading}
                                     />
                                     <p className="text-xs text-gray-500 mt-1">
                                         Enter the total number of assets to create
@@ -321,10 +327,22 @@ const AssetCreate: React.FC = () => {
                                 </div>
 
                                 {/* Configuration Preview */}
-                                {(tabsInput || assetCount) && (
+                                {(tabsInput || assetCount || reportId) && (
                                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                                         <h4 className="font-medium text-gray-800 mb-2">Configuration Preview:</h4>
                                         <div className="space-y-2 text-sm">
+                                            {reportId && (
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-600">Report ID:</span>
+                                                    <span className="font-medium">{reportId}</span>
+                                                    {reportExists === true && (
+                                                        <CheckCircle className="w-4 h-4 text-green-500 ml-2" />
+                                                    )}
+                                                    {reportExists === false && (
+                                                        <FileText className="w-4 h-4 text-red-500 ml-2" />
+                                                    )}
+                                                </div>
+                                            )}
                                             {tabsInput && (
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600">Tabs:</span>
@@ -341,6 +359,7 @@ const AssetCreate: React.FC = () => {
                                     </div>
                                 )}
 
+                                {/* Error Display */}
                                 {error && (
                                     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                                         <div className="flex items-center gap-3">
@@ -349,129 +368,28 @@ const AssetCreate: React.FC = () => {
                                         </div>
                                     </div>
                                 )}
-                            </div>
 
-                            <NavigationButtons
-                                onBack={() => setCurrentStep('report-id-check')}
-                                onNext={handleCreateAssets}
-                                nextLabel="Create Assets"
-                                backLabel="Back to Report Check"
-                                nextDisabled={!tabsInput.trim() || !assetCount.trim()}
-                            />
-                        </div>
-                    )}
-
-                    {/* Step 3: Creation In Progress */}
-                    {currentStep === 'creation-in-progress' && (
-                        <div className="space-y-6">
-                            <StepHeader
-                                icon={RefreshCw}
-                                title="Creating Assets"
-                                description="Please wait while we create your assets..."
-                                iconColor="text-orange-500"
-                            />
-
-                            <div className="bg-orange-50 border border-orange-200 rounded-xl p-8 text-center">
-                                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <RefreshCw className="w-8 h-8 text-orange-600 animate-spin" />
-                                </div>
-                                <h3 className="text-xl font-semibold text-orange-800 mb-2">Creating Assets</h3>
-                                <p className="text-orange-600 mb-4">
-                                    Please wait while we create {assetCount} assets for report <strong>{reportId}</strong>
-                                </p>
-                                <p className="text-sm text-orange-500">
-                                    This may take a few moments...
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Step 4: Success */}
-                    {currentStep === 'success' && (
-                        <div className="space-y-6">
-                            <StepHeader
-                                icon={CheckCircle}
-                                title="Success!"
-                                description="Your assets have been created successfully"
-                                iconColor="text-green-500"
-                            />
-
-                            <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-                                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <CheckCircle className="w-8 h-8 text-green-600" />
-                                </div>
-                                <h3 className="text-xl font-semibold text-green-800 mb-2">Assets Created Successfully!</h3>
-                                <p className="text-green-600 mb-2">Report ID: <strong>{reportId}</strong></p>
-
-                                <div className="bg-white rounded-lg p-4 max-w-md mx-auto mb-4">
-                                    <h4 className="font-medium text-gray-800 mb-2">Creation Details:</h4>
-                                    <div className="space-y-1 text-sm text-left">
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-600">Tabs:</span>
-                                            <span className="font-medium">{tabsInput}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-600">Asset Count:</span>
-                                            <span className="font-medium">{assetCount}</span>
-                                        </div>
-                                        {creationResult?.data?.status && (
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-600">Status:</span>
-                                                <span className="font-medium text-green-600">{creationResult.data.status}</span>
-                                            </div>
+                                {/* Action Buttons */}
+                                <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                                    <button
+                                        onClick={() => navigate(-1)}
+                                        disabled={isLoading}
+                                        className="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+                                    >
+                                        <ArrowLeft className="w-4 h-4" />
+                                        Back
+                                    </button>
+                                    <button
+                                        onClick={handleCreateAssets}
+                                        disabled={!canCreateAssets || isLoading || !isLoggedIn}
+                                        className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+                                    >
+                                        {isLoading ? (
+                                            <RefreshCw className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            <Play className="w-4 h-4" />
                                         )}
-                                    </div>
-                                </div>
-
-                                <p className="text-green-600 mb-4">The assets have been successfully created and added to your report.</p>
-
-                                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                                    <button
-                                        onClick={() => navigate("/equipment/viewReports")}
-                                        className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
-                                    >
-                                        View Reports
-                                    </button>
-                                    <button
-                                        onClick={resetProcess}
-                                        className="px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg font-semibold transition-colors"
-                                    >
-                                        Create New Assets
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Error State */}
-                    {currentStep === 'error' && (
-                        <div className="space-y-6">
-                            <StepHeader
-                                icon={FileText}
-                                title="Error"
-                                description="There was an issue creating your assets"
-                                iconColor="text-red-500"
-                            />
-
-                            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <FileText className="w-8 h-8 text-red-600" />
-                                </div>
-                                <h3 className="text-xl font-semibold text-red-800 mb-2">Asset Creation Failed</h3>
-                                <p className="text-red-600 mb-4">{error}</p>
-
-                                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                                    <button
-                                        onClick={() => setCurrentStep('asset-configuration')}
-                                        className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors"
-                                    >
-                                        Try Again
-                                    </button>
-                                    <button
-                                        onClick={resetProcess}
-                                        className="px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg font-semibold transition-colors"
-                                    >
-                                        Start Over
+                                        {isLoading ? "Creating Assets..." : "Create Assets"}
                                     </button>
                                 </div>
                             </div>
