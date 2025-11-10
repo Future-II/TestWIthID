@@ -385,13 +385,13 @@ const UpdateReportWithExcel: React.FC = () => {
                             <div className="flex items-start gap-3">
                                 <AlertTriangle className="w-5 h-5 text-yellow-500 mt-0.5" />
                                 <div>
-                                    <p className="font-medium text-yellow-800 mb-2">Excel File Requirements</p>
+                                    {/* <p className="font-medium text-yellow-800 mb-2">Excel File Requirements</p>
                                     <ul className="text-sm text-yellow-700 space-y-1">
                                         <li>• Must contain exactly 2 sheets: marketAssets and costAssets</li>
                                         <li>• Asset count must match existing report</li>
                                         <li>• File size should not exceed 50MB</li>
                                         <li>• Supported formats: .xlsx, .xls</li>
-                                    </ul>
+                                    </ul> */}
                                 </div>
                             </div>
                         </div>
