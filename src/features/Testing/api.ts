@@ -20,7 +20,14 @@ export const uploadAssetsToDB = async (
     throw new Error("Error uploading assets to DB");
   }
 };
-
+export const checkBrowserStatus = async () => {
+  try {
+    const response = await api.get('/taqeemAuth/browser/status');
+    return response.data;
+  } catch (error) {
+    throw new Error('Error checking browser status');
+  }
+};
 export const taqeemLogin = async (email: string, password: string, method?: string) => {
   try {
     const response = await api.post('/taqeemAuth/login', {

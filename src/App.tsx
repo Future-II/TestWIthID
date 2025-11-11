@@ -12,6 +12,7 @@ import GrabMacroIds from './features/Testing/pages/GrabMacroIds';
 import UpdateReportWithExcel from './features/Testing/pages/UpdateReportWithExcel';
 import AddCommonFields from './features/Testing/pages/AddCommonFields';
 import SubmitMacro from './features/Testing/pages/MacroEdits';
+import CheckBrowser from './features/Testing/pages/CheckBrowser';
 
 export function App() {
   return (
@@ -29,6 +30,7 @@ export function App() {
                 <Route path="/testing/excel-upload" element={<UpdateReportWithExcel />} />
                 <Route path="/testing/add-other-fields" element={<AddCommonFields />} />
                 <Route path='/testing/submit-macros' element={<SubmitMacro />} />
+                <Route path='/testing/check-browser' element={<CheckBrowser />} />
               </Routes>
             </Layout>
           </Router>

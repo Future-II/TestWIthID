@@ -37,6 +37,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           path: '/'
         },
         {
+          name: "Check Browser Status Test",
+          path: '/testing/check-browser'
+        },
+        {
           name: "With ID Excel Test",
           path: '/testing/with-id'
         },
