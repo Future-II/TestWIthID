@@ -9,10 +9,12 @@ import {
     Database,
     Search,
     Clock,
-    AlertCircle
+    AlertCircle,
+    Pause,
+    Play
 } from "lucide-react";
 
-import { submitMacro, checkMacroStatus, halfCheckMacroStatus } from "../api";
+import { submitMacro, checkMacroStatus, halfCheckMacroStatus, pauseProcessing, resumeProcessing } from "../api";
 import ProgressIndicator from "../components/ProgressIndicator";
 import StepHeader from "../components/StepHeader";
 import { useTaqeemAuth } from "../../../shared/context/TaqeemAuthContext";
@@ -297,6 +299,78 @@ const SubmitMacro: React.FC = () => {
         };
     }, [socket, reportId]);
 
+    const handlePauseProcessing = async () => {
+        if (!reportId) return;
+
+        try {
+            console.log(`Pausing processing for report: ${reportId}`);
+
+            // Optimistically update UI
+            dispatch({
+                type: 'PAUSE_PROGRESS',
+                payload: { reportId }
+            });
+
+            const result = await pauseProcessing(reportId);
+            console.log("Pause result:", result);
+
+            if (!result.success) {
+                // Revert if failed
+                dispatch({
+                    type: 'RESUME_PROGRESS',
+                    payload: { reportId }
+                });
+                setError(result.error || 'Failed to pause processing');
+            }
+        } catch (err: any) {
+            console.error("Error pausing processing:", err);
+            setError(err.message || 'Failed to pause processing');
+
+            // Revert on error
+            dispatch({
+                type: 'RESUME_PROGRESS',
+                payload: { reportId }
+            });
+        }
+    };
+
+    // Handle resume processing
+    const handleResumeProcessing = async () => {
+        if (!reportId) return;
+
+        try {
+            console.log(`Resuming processing for report: ${reportId}`);
+
+            // Optimistically update UI
+            dispatch({
+                type: 'RESUME_PROGRESS',
+                payload: { reportId }
+            });
+
+            const result = await resumeProcessing(reportId);
+            console.log("Resume result:", result);
+
+            if (!result.success) {
+                // Revert if failed
+                dispatch({
+                    type: 'PAUSE_PROGRESS',
+                    payload: { reportId }
+                });
+                setError(result.error || 'Failed to resume processing');
+            }
+        } catch (err: any) {
+            console.error("Error resuming processing:", err);
+            setError(err.message || 'Failed to resume processing');
+
+            // Revert on error
+            dispatch({
+                type: 'PAUSE_PROGRESS',
+                payload: { reportId }
+            });
+        }
+    };
+
+
     return (
         <div className="min-h-screen bg-gray-100 py-8">
             <div className="max-w-4xl mx-auto px-4">
@@ -458,6 +532,44 @@ const SubmitMacro: React.FC = () => {
                                 paused={currentProgress.paused}
                                 data={currentProgress.data}
                             />
+
+                            {/* Pause/Resume Controls */}
+                            <div className="flex justify-center gap-3 mt-6">
+                                {currentProgress.paused ? (
+                                    <button
+                                        onClick={handleResumeProcessing}
+                                        disabled={currentProgress.stopped}
+                                        className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded font-semibold flex items-center gap-2"
+                                    >
+                                        <Play className="w-4 h-4" />
+                                        Resume Processing
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handlePauseProcessing}
+                                        disabled={currentProgress.stopped || currentProgress.status === 'COMPLETED'}
+                                        className="px-6 py-3 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 text-white rounded font-semibold flex items-center gap-2"
+                                    >
+                                        <Pause className="w-4 h-4" />
+                                        Pause Processing
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Pause Status Message */}
+                            {currentProgress.paused && (
+                                <div className="bg-yellow-100 border border-yellow-300 rounded p-4">
+                                    <div className="flex items-center gap-3">
+                                        <Pause className="w-5 h-5 text-yellow-600" />
+                                        <div>
+                                            <p className="font-semibold text-yellow-800">Processing Paused</p>
+                                            <p className="text-sm text-yellow-700">
+                                                Click "Resume Processing" to continue where you left off
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
 

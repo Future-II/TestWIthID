@@ -22,7 +22,6 @@ interface ProgressState {
   stopped: boolean;
   actionType?: "submit" | "retry" | "check";
   data?: ProgressData;
-
 }
 
 interface GlobalProgressState {
@@ -32,7 +31,9 @@ interface GlobalProgressState {
 type ProgressAction =
   | { type: 'UPDATE_PROGRESS'; payload: { reportId: string; updates: Partial<ProgressState> } }
   | { type: 'CLEAR_PROGRESS'; payload: { reportId: string } }
-  | { type: 'SET_PROGRESS_STATE'; payload: GlobalProgressState };
+  | { type: 'SET_PROGRESS_STATE'; payload: GlobalProgressState }
+  | { type: 'PAUSE_PROGRESS'; payload: { reportId: string } }
+  | { type: 'RESUME_PROGRESS'; payload: { reportId: string } };
 
 const ProgressContext = createContext<{
   progressStates: GlobalProgressState;
@@ -50,12 +51,50 @@ function progressReducer(state: GlobalProgressState, action: ProgressAction): Gl
           ...action.payload.updates
         } as ProgressState
       };
-    case 'CLEAR_PROGRESS':
+
+    case 'CLEAR_PROGRESS': {
       const newState = { ...state };
       delete newState[action.payload.reportId];
       return newState;
+    }
+
     case 'SET_PROGRESS_STATE':
       return action.payload;
+
+    case 'PAUSE_PROGRESS': {
+      const { reportId } = action.payload;
+      if (!state[reportId]) return state;
+
+      console.log('[PROGRESS CONTEXT] PAUSE_PROGRESS dispatched for:', reportId);
+
+      return {
+        ...state,
+        [reportId]: {
+          ...state[reportId],
+          paused: true,
+          status: 'PAUSED',
+          message: 'Processing paused by user',
+        },
+      };
+    }
+
+    case 'RESUME_PROGRESS': {
+      const { reportId } = action.payload;
+      if (!state[reportId]) return state;
+
+      console.log('[PROGRESS CONTEXT] RESUME_PROGRESS dispatched for:', reportId);
+
+      return {
+        ...state,
+        [reportId]: {
+          ...state[reportId],
+          paused: false,
+          status: 'PROCESSING',
+          message: 'Resuming processing...',
+        },
+      };
+    }
+
     default:
       return state;
   }

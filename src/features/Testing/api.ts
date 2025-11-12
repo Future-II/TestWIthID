@@ -203,6 +203,46 @@ export const halfCheckMacroStatus = async (reportId: string, tabsNum: string) =>
   }
 };
 
+// Add these functions to your api.ts file (the one with submitMacro, checkMacroStatus, etc.)
+
+export const pauseProcessing = async (reportId: string) => {
+  try {
+    const response = await api.post('/taqeemSubmission/pause-processing', {
+      reportId: reportId.trim(),
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("Error pausing processing:", error);
+
+    if (error.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    } else if (error.response?.status === 404) {
+      throw new Error('Report not found. Please check the report ID.');
+    } else {
+      throw new Error('Error pausing processing. Please try again.');
+    }
+  }
+};
+
+export const resumeProcessing = async (reportId: string) => {
+  try {
+    const response = await api.post('/taqeemSubmission/resume-processing', {
+      reportId: reportId.trim(),
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("Error resuming processing:", error);
+
+    if (error.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    } else if (error.response?.status === 404) {
+      throw new Error('Report not found. Please check the report ID.');
+    } else {
+      throw new Error('Error resuming processing. Please try again.');
+    }
+  }
+};
+
 export const submitMacro = async (reportId: string, tabsNum: number) => {
   try {
     const response = await api.post('/taqeemSubmission/edit-macros', {
