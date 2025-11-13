@@ -126,6 +126,30 @@ export const checkReportInDB = async (reportId: string) => {
   }
 };
 
+export const changeReportStatus = async (reportId: string) => {
+  try {
+    const response = await api.post('/taqeemDelete/change-report-status', {
+      reportId: reportId.trim(),
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("Error changing report status:", error);
+
+    // Handle specific error cases
+    if (error.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    } else if (error.response?.status === 404) {
+      throw new Error('Report not found. Please check the report ID.');
+    } else if (error.response?.status === 403) {
+      throw new Error('You do not have permission to change this report status.');
+    } else if (error.message?.includes('timeout')) {
+      throw new Error('Status change timeout. Please try again.');
+    } else {
+      throw new Error('Error changing report status. Please try again.');
+    }
+  }
+};
+
 export const validateExcelData = async (reportId: string, fileData: any) => {
   try {
     const response = await api.post('/taqeemSubmission/validate-report', {
@@ -135,6 +159,16 @@ export const validateExcelData = async (reportId: string, fileData: any) => {
     return response.data;
   } catch (error) {
     throw new Error('Error validating Excel data');
+  }
+};
+
+// Add this to your api.js or similar file
+export const createNewWindow = async () => {
+  try {
+    const response = await api.post('/taqeemAuth/browser/new-window');
+    return response.data;
+  } catch (error) {
+    throw new Error('Error creating new browser window');
   }
 };
 

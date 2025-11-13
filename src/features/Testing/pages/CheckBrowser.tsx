@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { RefreshCw, CheckCircle, XCircle, AlertCircle } from "lucide-react";
-import { checkBrowserStatus } from "../api";
+import { RefreshCw, CheckCircle, XCircle, AlertCircle, Plus } from "lucide-react";
+import { checkBrowserStatus, createNewWindow } from "../api";
 
 const CheckBrowser: React.FC = () => {
     const [isChecking, setIsChecking] = useState(false);
+    const [isCreatingWindow, setIsCreatingWindow] = useState(false);
     const [browserStatus, setBrowserStatus] = useState<{
         isOpen: boolean | null;
         message: string;
@@ -12,9 +13,15 @@ const CheckBrowser: React.FC = () => {
         isOpen: null,
         message: "Check browser status"
     });
+    const [windowCreationResult, setWindowCreationResult] = useState<{
+        success: boolean | null;
+        message: string;
+        error?: string;
+    } | null>(null);
 
     const handleCheckBrowser = async () => {
         setIsChecking(true);
+        setWindowCreationResult(null); // Clear previous window creation result
         setBrowserStatus({
             isOpen: null,
             message: "Checking browser status..."
@@ -37,6 +44,31 @@ const CheckBrowser: React.FC = () => {
             });
         } finally {
             setIsChecking(false);
+        }
+    };
+
+    const handleCreateNewWindow = async () => {
+        if (!browserStatus.isOpen) return;
+
+        setIsCreatingWindow(true);
+        setWindowCreationResult(null);
+
+        try {
+            const result = await createNewWindow();
+            console.log("New window creation result:", result);
+
+            setWindowCreationResult({
+                success: true,
+                message: result.message || "New browser window created successfully",
+            });
+        } catch (err: any) {
+            setWindowCreationResult({
+                success: false,
+                message: "Failed to create new browser window",
+                error: err.message || "Unknown error occurred"
+            });
+        } finally {
+            setIsCreatingWindow(false);
         }
     };
 
@@ -108,6 +140,34 @@ const CheckBrowser: React.FC = () => {
                             </div>
                         )}
 
+                        {/* Window Creation Result */}
+                        {windowCreationResult && (
+                            <div className={`border rounded-lg p-3 mb-4 ${windowCreationResult.success
+                                    ? "bg-green-50 border-green-200"
+                                    : "bg-red-50 border-red-200"
+                                }`}>
+                                <div className="flex items-center gap-2 justify-center">
+                                    {windowCreationResult.success ? (
+                                        <CheckCircle className="w-4 h-4 text-green-600" />
+                                    ) : (
+                                        <XCircle className="w-4 h-4 text-red-600" />
+                                    )}
+                                    <span className={
+                                        windowCreationResult.success
+                                            ? "text-green-700 text-sm"
+                                            : "text-red-700 text-sm"
+                                    }>
+                                        {windowCreationResult.message}
+                                    </span>
+                                </div>
+                                {windowCreationResult.error && (
+                                    <p className="text-red-600 text-xs mt-1">
+                                        {windowCreationResult.error}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
                         {/* Detailed Status Info */}
                         {browserStatus.isOpen !== null && (
                             <div className="bg-gray-50 rounded-lg p-3 mb-4">
@@ -132,7 +192,7 @@ const CheckBrowser: React.FC = () => {
                         <button
                             onClick={handleCheckBrowser}
                             disabled={isChecking}
-                            className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+                            className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors mb-3"
                         >
                             {isChecking ? (
                                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -142,9 +202,26 @@ const CheckBrowser: React.FC = () => {
                             {isChecking ? "Checking..." : "Check Browser Status"}
                         </button>
 
+                        {/* Create New Window Button */}
+                        <button
+                            onClick={handleCreateNewWindow}
+                            disabled={!browserStatus.isOpen || isCreatingWindow}
+                            className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+                        >
+                            {isCreatingWindow ? (
+                                <RefreshCw className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Plus className="w-4 h-4" />
+                            )}
+                            {isCreatingWindow ? "Creating..." : "Create New Window"}
+                        </button>
+
                         {/* Additional Info */}
                         <p className="text-xs text-gray-500 mt-4">
-                            Checks if browser is open and user is authenticated
+                            {browserStatus.isOpen
+                                ? "Browser is ready - you can create new windows"
+                                : "Check browser status first to enable window creation"
+                            }
                         </p>
                     </div>
                 </div>

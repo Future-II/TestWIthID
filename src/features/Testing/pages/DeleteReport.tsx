@@ -6,10 +6,12 @@ import {
     FileText,
     RefreshCw,
     Trash2,
-    Search
+    Search,
+    PlayCircle,
+    AlertTriangle
 } from "lucide-react";
 
-import { deleteReport, validateExcelData } from "../api";
+import { deleteReport, validateExcelData, changeReportStatus } from "../api";
 import { useTaqeemAuth } from "../../../shared/context/TaqeemAuthContext";
 
 const DeleteReport: React.FC = () => {
@@ -27,6 +29,11 @@ const DeleteReport: React.FC = () => {
     const [reportExists, setReportExists] = useState<boolean | null>(null);
     const [deleteRequested, setDeleteRequested] = useState(false);
 
+    // New states for status change
+    const [isChangingStatus, setIsChangingStatus] = useState(false);
+    const [statusChangeResult, setStatusChangeResult] = useState<any>(null);
+    const [statusChangeRequested, setStatusChangeRequested] = useState(false);
+
     // Handle report validation in Taqeem
     const handleCheckReportInTaqeem = async () => {
         if (!reportId.trim()) {
@@ -37,6 +44,8 @@ const DeleteReport: React.FC = () => {
         setIsCheckingReport(true);
         setError("");
         setReportExists(null);
+        setStatusChangeResult(null);
+        setStatusChangeRequested(false);
 
         try {
             const result = await validateExcelData(reportId, {});
@@ -98,6 +107,8 @@ const DeleteReport: React.FC = () => {
 
         setError("");
         setDeleteRequested(true);
+        setStatusChangeResult(null);
+        setStatusChangeRequested(false);
 
         try {
             console.log(`Sending delete request for report: ${reportId}`);
@@ -114,6 +125,109 @@ const DeleteReport: React.FC = () => {
             console.error("Error initiating report deletion:", err);
             // Don't set error state since we're doing fire-and-forget
         }
+    };
+
+    // Handle changing report status
+    // Handle changing report status
+    const handleChangeReportStatus = async () => {
+        if (!reportId.trim()) {
+            setError("Report ID is required");
+            return;
+        }
+
+        setIsChangingStatus(true);
+        setError("");
+        setStatusChangeResult(null);
+        setStatusChangeRequested(false);
+
+        try {
+            console.log(`Changing status for report: ${reportId}`);
+
+            const result = await changeReportStatus(reportId);
+            console.log("Status change result:", result);
+
+            // Extract the Python response from result.data
+            const pythonResponse = result.data;
+            console.log("Python response:", pythonResponse);
+
+            setStatusChangeResult(pythonResponse); // Store the actual Python response
+            setStatusChangeRequested(true);
+
+        } catch (err: any) {
+            console.error("Error changing report status:", err);
+
+            // Handle different error scenarios
+            if (err?.response?.status === 400) {
+                setError("Invalid request. Please check the report ID and try again.");
+            } else if (err?.response?.status === 401) {
+                setError("Please log in to change report status.");
+            } else if (err?.response?.status === 500) {
+                setError("Server error. Please try again later.");
+            } else if (err?.response?.status === 504) {
+                setError("Request timeout. Please try again.");
+            } else {
+                setError(err.message || "Error changing report status. Please try again.");
+            }
+        } finally {
+            setIsChangingStatus(false);
+        }
+    };
+
+    // Render status change result
+    const renderStatusChangeResult = () => {
+        if (!statusChangeResult) return null;
+
+        const { status, message, error, wasCancelled, previousStatus, currentStatus } = statusChangeResult;
+
+        if (status === 'CHANGED') {
+            return (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                    <div className="flex items-center gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-500" />
+                        <div>
+                            <p className="font-medium text-green-800">Status Changed Successfully</p>
+                            <p className="text-sm text-green-600">{message}</p>
+                            <p className="text-xs text-green-500 mt-1">
+                                Previous status: <strong>{previousStatus}</strong> → Current status: <strong>CANCELLED</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        if (status === 'NOT_CANCELLED') {
+            return (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <div className="flex items-center gap-3">
+                        <AlertTriangle className="w-5 h-5 text-blue-500" />
+                        <div>
+                            <p className="font-medium text-blue-800">Status Not Changed</p>
+                            <p className="text-sm text-blue-600">{message}</p>
+                            <p className="text-xs text-blue-500 mt-1">
+                                Current status: <strong>{currentStatus}</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        if (status === 'FAILED') {
+            return (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                    <div className="flex items-center gap-3">
+                        <AlertTriangle className="w-5 h-5 text-red-500" />
+                        <div>
+                            <p className="font-medium text-red-800">Status Change Failed</p>
+                            <p className="text-sm text-red-600">{error || "Failed to change report status"}</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        return null;
     };
 
     return (
@@ -159,6 +273,8 @@ const DeleteReport: React.FC = () => {
                                             setError("");
                                             setReportExists(null);
                                             setDeleteRequested(false);
+                                            setStatusChangeResult(null);
+                                            setStatusChangeRequested(false);
                                         }}
                                         className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
                                         placeholder="Enter report ID to delete"
@@ -202,6 +318,33 @@ const DeleteReport: React.FC = () => {
                                         </div>
                                     </div>
                                 )}
+                            </div>
+
+                            {/* Status Change Section - ALWAYS VISIBLE */}
+                            <div className="border border-gray-200 rounded-xl p-4 bg-gray-50">
+                                <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                    <PlayCircle className="w-5 h-5 text-blue-500" />
+                                    Change Report Status
+                                </h3>
+                                <p className="text-sm text-gray-600 mb-3">
+                                    Change the report status before deletion if needed.
+                                </p>
+
+                                <button
+                                    onClick={handleChangeReportStatus}
+                                    disabled={!reportId.trim() || isChangingStatus || !isLoggedIn}
+                                    className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+                                >
+                                    {isChangingStatus ? (
+                                        <RefreshCw className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <PlayCircle className="w-4 h-4" />
+                                    )}
+                                    {isChangingStatus ? "Changing Status..." : "Change Report Status"}
+                                </button>
+
+                                {/* Status Change Result */}
+                                {renderStatusChangeResult()}
                             </div>
 
                             {/* Delete Request Sent Confirmation */}
