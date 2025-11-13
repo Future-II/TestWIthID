@@ -1,28 +1,72 @@
 import React, { useState } from "react";
-import { RefreshCw, CheckCircle, XCircle } from "lucide-react";
+import { RefreshCw, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { checkBrowserStatus } from "../api";
-
-
 
 const CheckBrowser: React.FC = () => {
     const [isChecking, setIsChecking] = useState(false);
-    const [browserStatus, setBrowserStatus] = useState<boolean | null>(null);
-    const [error, setError] = useState("");
+    const [browserStatus, setBrowserStatus] = useState<{
+        isOpen: boolean | null;
+        message: string;
+        error?: string;
+    }>({
+        isOpen: null,
+        message: "Check browser status"
+    });
 
     const handleCheckBrowser = async () => {
         setIsChecking(true);
-        setError("");
+        setBrowserStatus({
+            isOpen: null,
+            message: "Checking browser status..."
+        });
 
         try {
             const result = await checkBrowserStatus();
             console.log("Browser status result:", result);
-            setBrowserStatus(result.browserOpen);
+
+            setBrowserStatus({
+                isOpen: result.browserOpen,
+                message: result.message,
+                error: result.error
+            });
         } catch (err: any) {
-            setError(err.message || "Failed to check browser status");
-            setBrowserStatus(null);
+            setBrowserStatus({
+                isOpen: false,
+                message: "Failed to check browser status",
+                error: err.message || "Unknown error occurred"
+            });
         } finally {
             setIsChecking(false);
         }
+    };
+
+    const getStatusIcon = () => {
+        if (browserStatus.isOpen === true) {
+            return <CheckCircle className="w-8 h-8 text-green-600" />;
+        } else if (browserStatus.isOpen === false) {
+            return browserStatus.error ? (
+                <AlertCircle className="w-8 h-8 text-orange-500" />
+            ) : (
+                <XCircle className="w-8 h-8 text-red-600" />
+            );
+        }
+        return <RefreshCw className="w-8 h-8 text-gray-400" />;
+    };
+
+    const getStatusColor = () => {
+        if (browserStatus.isOpen === true) return "text-green-600";
+        if (browserStatus.isOpen === false) {
+            return browserStatus.error ? "text-orange-500" : "text-red-600";
+        }
+        return "text-gray-400";
+    };
+
+    const getStatusText = () => {
+        if (browserStatus.isOpen === true) return "Browser is Open & Logged In";
+        if (browserStatus.isOpen === false) {
+            return browserStatus.error ? "Browser Issue" : "Browser is Closed";
+        }
+        return "Check Browser Status";
     };
 
     return (
@@ -31,44 +75,55 @@ const CheckBrowser: React.FC = () => {
                 {/* Header */}
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold text-gray-800 mb-2">🌐 Check Browser</h1>
-                    <p className="text-gray-600">Check if the browser is currently open</p>
+                    <p className="text-gray-600">Check browser status and login state</p>
                 </div>
 
                 {/* Main Content */}
                 <div className="bg-white rounded-2xl shadow-lg p-6">
                     <div className="text-center">
                         {/* Status Icon */}
-                        <div className="mb-6">
-                            {browserStatus === true && (
-                                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <CheckCircle className="w-8 h-8 text-green-600" />
-                                </div>
-                            )}
-                            {browserStatus === false && (
-                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <XCircle className="w-8 h-8 text-red-600" />
-                                </div>
-                            )}
-                            {browserStatus === null && (
-                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <RefreshCw className="w-8 h-8 text-gray-400" />
-                                </div>
-                            )}
+                        <div className="mb-4">
+                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                                {getStatusIcon()}
+                            </div>
                         </div>
 
                         {/* Status Text */}
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                            {browserStatus === true && "Browser is Open"}
-                            {browserStatus === false && "Browser is Closed"}
-                            {browserStatus === null && "Check Browser Status"}
+                        <h2 className={`text-2xl font-bold mb-2 ${getStatusColor()}`}>
+                            {getStatusText()}
                         </h2>
 
+                        {/* Status Message */}
+                        <p className="text-gray-600 mb-4">
+                            {browserStatus.message}
+                        </p>
+
                         {/* Error Display */}
-                        {error && (
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                        {browserStatus.error && (
+                            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
                                 <div className="flex items-center gap-2 justify-center">
-                                    <XCircle className="w-4 h-4 text-red-500" />
-                                    <span className="text-red-700">{error}</span>
+                                    <AlertCircle className="w-4 h-4 text-orange-500" />
+                                    <span className="text-orange-700 text-sm">{browserStatus.error}</span>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Detailed Status Info */}
+                        {browserStatus.isOpen !== null && (
+                            <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                                <div className="text-sm text-gray-600">
+                                    <div className="flex justify-between">
+                                        <span>Browser:</span>
+                                        <span className={browserStatus.isOpen ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                                            {browserStatus.isOpen ? "Open" : "Closed"}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between mt-1">
+                                        <span>Authentication:</span>
+                                        <span className={browserStatus.isOpen ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                                            {browserStatus.isOpen ? "Logged In" : "Not Logged In"}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -84,12 +139,12 @@ const CheckBrowser: React.FC = () => {
                             ) : (
                                 <RefreshCw className="w-4 h-4" />
                             )}
-                            {isChecking ? "Checking..." : "Check Browser"}
+                            {isChecking ? "Checking..." : "Check Browser Status"}
                         </button>
 
                         {/* Additional Info */}
-                        <p className="text-sm text-gray-500 mt-4">
-                            Click the button to check the current browser status
+                        <p className="text-xs text-gray-500 mt-4">
+                            Checks if browser is open and user is authenticated
                         </p>
                     </div>
                 </div>

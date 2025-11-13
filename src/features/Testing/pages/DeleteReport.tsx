@@ -23,10 +23,9 @@ const DeleteReport: React.FC = () => {
     const [error, setError] = useState("");
 
     // Operation states
-    const [isDeleting, setIsDeleting] = useState(false);
     const [isCheckingReport, setIsCheckingReport] = useState(false);
     const [reportExists, setReportExists] = useState<boolean | null>(null);
-    const [deleteSuccess, setDeleteSuccess] = useState(false);
+    const [deleteRequested, setDeleteRequested] = useState(false);
 
     // Handle report validation in Taqeem
     const handleCheckReportInTaqeem = async () => {
@@ -41,18 +40,25 @@ const DeleteReport: React.FC = () => {
 
         try {
             const result = await validateExcelData(reportId, {});
-            console.log("Report ID check result:", result);
+            console.log("Full API response:", result);
 
-            // Check the status in the data object
-            if (result.data?.status === 'NOT_FOUND') {
+            // The Python response is wrapped in result.data by Express
+            const pythonResponse = result.data;
+            console.log("Python response:", pythonResponse);
+
+            // Check the status from the Python backend response
+            if (pythonResponse?.status === 'NOT_FOUND') {
                 setReportExists(false);
                 setError("Report with this ID does not exist. Please check the ID and try again.");
-            } else if (result.data?.status === 'SUCCESS') {
+            } else if (pythonResponse?.status === 'SUCCESS') {
                 setReportExists(true);
                 setError("");
-            } else if (result.data?.status === 'MACROS_EXIST') {
+            } else if (pythonResponse?.status === 'MACROS_EXIST') {
                 setReportExists(false);
-                setError(`Report exists with ${result.data?.assetsExact} macros. Please use a different report ID.`);
+                setError(`Report exists with ${pythonResponse?.assetsExact || pythonResponse?.microsCount || 'unknown'} macros. Please use a different report ID.`);
+            } else if (pythonResponse?.status === 'FAILED') {
+                setReportExists(false);
+                setError(pythonResponse?.error || "Failed to check report ID");
             } else {
                 // Handle unexpected status values
                 setReportExists(false);
@@ -61,10 +67,19 @@ const DeleteReport: React.FC = () => {
         } catch (err: any) {
             console.error("Error checking report:", err);
 
-            // ✅ Gracefully handle 400 responses
-            if (err?.response?.status === 400 || err?.status === 400) {
+            // Handle different error scenarios
+            if (err?.response?.status === 400) {
                 setReportExists(false);
-                setError("Report with this ID does not exist. Please check the ID and try again.");
+                setError("Invalid request. Please check the report ID and try again.");
+            } else if (err?.response?.status === 401) {
+                setReportExists(false);
+                setError("Please log in to check report ID.");
+            } else if (err?.response?.status === 500) {
+                setReportExists(false);
+                setError("Server error. Please try again later.");
+            } else if (err?.response?.status === 504) {
+                setReportExists(false);
+                setError("Request timeout. Please try again.");
             } else {
                 setReportExists(false);
                 setError(err.message || "Error checking report ID. Please try again.");
@@ -74,44 +89,31 @@ const DeleteReport: React.FC = () => {
         }
     };
 
-    // Handle report deletion
+    // Handle report deletion - fire and forget
     const handleDeleteReport = async () => {
         if (!reportId.trim()) {
             setError("Report ID is required");
             return;
         }
 
-        setIsDeleting(true);
         setError("");
+        setDeleteRequested(true);
 
         try {
-            console.log(`Deleting report: ${reportId}`);
+            console.log(`Sending delete request for report: ${reportId}`);
 
-            const result = await deleteReport(reportId);
-            console.log("Report deletion result:", result);
+            // Fire the delete request but don't wait for response
+            deleteReport(reportId).then(result => {
+                console.log("Report deletion completed:", result);
+            }).catch(err => {
+                console.error("Report deletion encountered error:", err);
+                // Don't show errors to user since we're doing fire-and-forget
+            });
 
-            if (result.data.status === "SUCCESS") {
-                setDeleteSuccess(true);
-                setError("");
-            } else {
-                setError(result.error || 'Failed to delete report');
-            }
         } catch (err: any) {
-            console.error("Error deleting report:", err);
-            setError(err.message || 'An unexpected error occurred during report deletion');
-        } finally {
-            setIsDeleting(false);
+            console.error("Error initiating report deletion:", err);
+            // Don't set error state since we're doing fire-and-forget
         }
-    };
-
-    // Reset process
-    const resetProcess = () => {
-        setReportId("");
-        setError("");
-        setIsDeleting(false);
-        setIsCheckingReport(false);
-        setReportExists(null);
-        setDeleteSuccess(false);
     };
 
     return (
@@ -156,14 +158,14 @@ const DeleteReport: React.FC = () => {
                                             setReportId(e.target.value);
                                             setError("");
                                             setReportExists(null);
+                                            setDeleteRequested(false);
                                         }}
                                         className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
                                         placeholder="Enter report ID to delete"
-                                        disabled={isDeleting || deleteSuccess}
                                     />
                                     <button
                                         onClick={handleCheckReportInTaqeem}
-                                        disabled={!reportId.trim() || isCheckingReport || isDeleting || !isLoggedIn || deleteSuccess}
+                                        disabled={!reportId.trim() || isCheckingReport || !isLoggedIn}
                                         className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-semibold flex items-center gap-2 transition-colors whitespace-nowrap"
                                     >
                                         {isCheckingReport ? (
@@ -202,6 +204,24 @@ const DeleteReport: React.FC = () => {
                                 )}
                             </div>
 
+                            {/* Delete Request Sent Confirmation */}
+                            {deleteRequested && (
+                                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                                    <div className="flex items-center gap-3">
+                                        <CheckCircle className="w-5 h-5 text-blue-500" />
+                                        <div>
+                                            <p className="font-medium text-blue-800">Delete Request Sent</p>
+                                            <p className="text-sm text-blue-600">
+                                                Delete request sent for Report ID: <strong>{reportId}</strong>
+                                            </p>
+                                            <p className="text-xs text-blue-500 mt-1">
+                                                You can send multiple delete requests if needed.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Error Display */}
                             {error && (
                                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -213,7 +233,7 @@ const DeleteReport: React.FC = () => {
                             )}
 
                             {/* Warning Box */}
-                            {!deleteSuccess && (
+                            {!deleteRequested && (
                                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                                     <div className="flex items-center gap-3">
                                         <FileText className="w-5 h-5 text-yellow-500" />
@@ -227,62 +247,24 @@ const DeleteReport: React.FC = () => {
                                 </div>
                             )}
 
-                            {/* Success State - Appears below the form */}
-                            {deleteSuccess && (
-                                <div className="bg-green-50 border border-green-200 rounded-xl p-6">
-                                    <div className="text-center mb-4">
-                                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                            <CheckCircle className="w-8 h-8 text-green-600" />
-                                        </div>
-                                        <h3 className="text-xl font-semibold text-green-800 mb-2">Report Deleted Successfully!</h3>
-                                        <p className="text-green-600 mb-2">Report ID: <strong>{reportId}</strong></p>
-                                        <p className="text-green-600">
-                                            The report and all associated data have been permanently deleted from the system.
-                                        </p>
-                                    </div>
-
-                                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                                        <button
-                                            onClick={() => navigate("/equipment/viewReports")}
-                                            className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
-                                        >
-                                            View Reports
-                                        </button>
-                                        <button
-                                            onClick={resetProcess}
-                                            className="px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg font-semibold transition-colors"
-                                        >
-                                            Delete Another Report
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-
                             {/* Action Buttons */}
-                            {!deleteSuccess && (
-                                <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                                    <button
-                                        onClick={() => navigate(-1)}
-                                        disabled={isDeleting}
-                                        className="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
-                                    >
-                                        <ArrowLeft className="w-4 h-4" />
-                                        Back
-                                    </button>
-                                    <button
-                                        onClick={handleDeleteReport}
-                                        disabled={!reportId.trim() || isDeleting || !isLoggedIn}
-                                        className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
-                                    >
-                                        {isDeleting ? (
-                                            <RefreshCw className="w-4 h-4 animate-spin" />
-                                        ) : (
-                                            <Trash2 className="w-4 h-4" />
-                                        )}
-                                        {isDeleting ? "Deleting..." : "Delete Report"}
-                                    </button>
-                                </div>
-                            )}
+                            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                                <button
+                                    onClick={() => navigate(-1)}
+                                    className="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+                                >
+                                    <ArrowLeft className="w-4 h-4" />
+                                    Back
+                                </button>
+                                <button
+                                    onClick={handleDeleteReport}
+                                    disabled={!reportId.trim() || !isLoggedIn}
+                                    className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                    Delete Report
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

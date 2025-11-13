@@ -56,18 +56,25 @@ const AssetCreate: React.FC = () => {
 
         try {
             const result = await validateExcelData(reportId, {});
-            console.log("Report ID check result:", result);
+            console.log("Full API response:", result);
 
-            // Check the status in the data object
-            if (result.data?.status === 'NOT_FOUND') {
+            // The Python response is wrapped in result.data by Express
+            const pythonResponse = result.data;
+            console.log("Python response:", pythonResponse);
+
+            // Check the status from the Python backend response
+            if (pythonResponse?.status === 'NOT_FOUND') {
                 setReportExists(false);
                 setTaqeemError("Report with this ID does not exist. Please check the ID and try again.");
-            } else if (result.data?.status === 'SUCCESS') {
+            } else if (pythonResponse?.status === 'SUCCESS') {
                 setReportExists(true);
                 setTaqeemError("");
-            } else if (result.data?.status === 'MACROS_EXIST') {
+            } else if (pythonResponse?.status === 'MACROS_EXIST') {
                 setReportExists(false);
-                setTaqeemError(`Report Exist with  ${result.data?.assetsExact} macros. Please use a different report ID.`);
+                setTaqeemError(`Report exists with ${pythonResponse?.assetsExact || pythonResponse?.microsCount || 'unknown'} macros. Please use a different report ID.`);
+            } else if (pythonResponse?.status === 'FAILED') {
+                setReportExists(false);
+                setTaqeemError(pythonResponse?.error || "Failed to check report ID");
             } else {
                 // Handle unexpected status values
                 setReportExists(false);
@@ -76,10 +83,19 @@ const AssetCreate: React.FC = () => {
         } catch (err: any) {
             console.error("Error checking report:", err);
 
-            // ✅ Gracefully handle 400 responses
-            if (err?.response?.status === 400 || err?.status === 400) {
+            // Handle different error scenarios
+            if (err?.response?.status === 400) {
                 setReportExists(false);
-                setTaqeemError("Report with this ID does not exist. Please check the ID and try again.");
+                setTaqeemError("Invalid request. Please check the report ID and try again.");
+            } else if (err?.response?.status === 401) {
+                setReportExists(false);
+                setTaqeemError("Please log in to check report ID.");
+            } else if (err?.response?.status === 500) {
+                setReportExists(false);
+                setTaqeemError("Server error. Please try again later.");
+            } else if (err?.response?.status === 504) {
+                setReportExists(false);
+                setTaqeemError("Request timeout. Please try again.");
             } else {
                 setReportExists(false);
                 setTaqeemError(err.message || "Error checking report ID. Please try again.");
