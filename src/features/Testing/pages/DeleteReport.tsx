@@ -4,7 +4,6 @@ import {
     CheckCircle,
     ArrowLeft,
     FileText,
-    RefreshCw,
     Trash2,
     Search,
     PlayCircle,
@@ -12,11 +11,9 @@ import {
 } from "lucide-react";
 
 import { deleteReport, validateExcelData, changeReportStatus } from "../api";
-import { useTaqeemAuth } from "../../../shared/context/TaqeemAuthContext";
 
 const DeleteReport: React.FC = () => {
     const navigate = useNavigate();
-    const { isLoggedIn } = useTaqeemAuth();
 
     // Report ID state
     const [reportId, setReportId] = useState("");
@@ -30,9 +27,7 @@ const DeleteReport: React.FC = () => {
     const [deleteRequested, setDeleteRequested] = useState(false);
 
     // New states for status change
-    const [isChangingStatus, setIsChangingStatus] = useState(false);
     const [statusChangeResult, setStatusChangeResult] = useState<any>(null);
-    const [statusChangeRequested, setStatusChangeRequested] = useState(false);
 
     // Handle report validation in Taqeem
     const handleCheckReportInTaqeem = async () => {
@@ -45,7 +40,6 @@ const DeleteReport: React.FC = () => {
         setError("");
         setReportExists(null);
         setStatusChangeResult(null);
-        setStatusChangeRequested(false);
 
         try {
             const result = await validateExcelData(reportId, {});
@@ -83,9 +77,6 @@ const DeleteReport: React.FC = () => {
             } else if (err?.response?.status === 401) {
                 setReportExists(false);
                 setError("Please log in to check report ID.");
-            } else if (err?.response?.status === 500) {
-                setReportExists(false);
-                setError("Server error. Please try again later.");
             } else if (err?.response?.status === 504) {
                 setReportExists(false);
                 setError("Request timeout. Please try again.");
@@ -108,7 +99,6 @@ const DeleteReport: React.FC = () => {
         setError("");
         setDeleteRequested(true);
         setStatusChangeResult(null);
-        setStatusChangeRequested(false);
 
         try {
             console.log(`Sending delete request for report: ${reportId}`);
@@ -118,58 +108,40 @@ const DeleteReport: React.FC = () => {
                 console.log("Report deletion completed:", result);
             }).catch(err => {
                 console.error("Report deletion encountered error:", err);
-                // Don't show errors to user since we're doing fire-and-forget
             });
 
         } catch (err: any) {
             console.error("Error initiating report deletion:", err);
-            // Don't set error state since we're doing fire-and-forget
         }
     };
 
-    // Handle changing report status
-    // Handle changing report status
+    // Handle changing report status - fire and forget
     const handleChangeReportStatus = async () => {
         if (!reportId.trim()) {
             setError("Report ID is required");
             return;
         }
 
-        setIsChangingStatus(true);
         setError("");
-        setStatusChangeResult(null);
-        setStatusChangeRequested(false);
+        setStatusChangeResult({
+            status: 'REQUEST_SENT',
+            message: 'Status change request sent'
+        });
 
         try {
             console.log(`Changing status for report: ${reportId}`);
 
-            const result = await changeReportStatus(reportId);
-            console.log("Status change result:", result);
-
-            // Extract the Python response from result.data
-            const pythonResponse = result.data;
-            console.log("Python response:", pythonResponse);
-
-            setStatusChangeResult(pythonResponse); // Store the actual Python response
-            setStatusChangeRequested(true);
+            // Fire the status change request but don't wait for response
+            changeReportStatus(reportId)
+                .then(result => {
+                    console.log("Status change result:", result);
+                })
+                .catch(err => {
+                    console.error("Status change encountered error:", err);
+                });
 
         } catch (err: any) {
-            console.error("Error changing report status:", err);
-
-            // Handle different error scenarios
-            if (err?.response?.status === 400) {
-                setError("Invalid request. Please check the report ID and try again.");
-            } else if (err?.response?.status === 401) {
-                setError("Please log in to change report status.");
-            } else if (err?.response?.status === 500) {
-                setError("Server error. Please try again later.");
-            } else if (err?.response?.status === 504) {
-                setError("Request timeout. Please try again.");
-            } else {
-                setError(err.message || "Error changing report status. Please try again.");
-            }
-        } finally {
-            setIsChangingStatus(false);
+            console.error("Error initiating status change:", err);
         }
     };
 
@@ -177,50 +149,19 @@ const DeleteReport: React.FC = () => {
     const renderStatusChangeResult = () => {
         if (!statusChangeResult) return null;
 
-        const { status, message, error, wasCancelled, previousStatus, currentStatus } = statusChangeResult;
+        const { status, message } = statusChangeResult;
 
-        if (status === 'CHANGED') {
-            return (
-                <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                    <div className="flex items-center gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                        <div>
-                            <p className="font-medium text-green-800">Status Changed Successfully</p>
-                            <p className="text-sm text-green-600">{message}</p>
-                            <p className="text-xs text-green-500 mt-1">
-                                Previous status: <strong>{previousStatus}</strong> → Current status: <strong>CANCELLED</strong>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        if (status === 'NOT_CANCELLED') {
+        if (status === 'REQUEST_SENT') {
             return (
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                     <div className="flex items-center gap-3">
-                        <AlertTriangle className="w-5 h-5 text-blue-500" />
+                        <CheckCircle className="w-5 h-5 text-blue-500" />
                         <div>
-                            <p className="font-medium text-blue-800">Status Not Changed</p>
+                            <p className="font-medium text-blue-800">Status Change Request Sent</p>
                             <p className="text-sm text-blue-600">{message}</p>
                             <p className="text-xs text-blue-500 mt-1">
-                                Current status: <strong>{currentStatus}</strong>
+                                Request sent for Report ID: <strong>{reportId}</strong>
                             </p>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        if (status === 'FAILED') {
-            return (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                    <div className="flex items-center gap-3">
-                        <AlertTriangle className="w-5 h-5 text-red-500" />
-                        <div>
-                            <p className="font-medium text-red-800">Status Change Failed</p>
-                            <p className="text-sm text-red-600">{error || "Failed to change report status"}</p>
                         </div>
                     </div>
                 </div>
@@ -274,22 +215,16 @@ const DeleteReport: React.FC = () => {
                                             setReportExists(null);
                                             setDeleteRequested(false);
                                             setStatusChangeResult(null);
-                                            setStatusChangeRequested(false);
                                         }}
                                         className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
                                         placeholder="Enter report ID to delete"
                                     />
                                     <button
                                         onClick={handleCheckReportInTaqeem}
-                                        disabled={!reportId.trim() || isCheckingReport || !isLoggedIn}
-                                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-semibold flex items-center gap-2 transition-colors whitespace-nowrap"
+                                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold flex items-center gap-2 transition-colors whitespace-nowrap"
                                     >
-                                        {isCheckingReport ? (
-                                            <RefreshCw className="w-4 h-4 animate-spin" />
-                                        ) : (
-                                            <Search className="w-4 h-4" />
-                                        )}
-                                        {isCheckingReport ? "Checking..." : "Check Report"}
+                                        <Search className="w-4 h-4" />
+                                        Check Report
                                     </button>
                                 </div>
                                 <p className="text-xs text-gray-500 mt-1">
@@ -332,15 +267,10 @@ const DeleteReport: React.FC = () => {
 
                                 <button
                                     onClick={handleChangeReportStatus}
-                                    disabled={!reportId.trim() || isChangingStatus || !isLoggedIn}
-                                    className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+                                    className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
                                 >
-                                    {isChangingStatus ? (
-                                        <RefreshCw className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                        <PlayCircle className="w-4 h-4" />
-                                    )}
-                                    {isChangingStatus ? "Changing Status..." : "Change Report Status"}
+                                    <PlayCircle className="w-4 h-4" />
+                                    Change Report Status
                                 </button>
 
                                 {/* Status Change Result */}
@@ -401,8 +331,7 @@ const DeleteReport: React.FC = () => {
                                 </button>
                                 <button
                                     onClick={handleDeleteReport}
-                                    disabled={!reportId.trim() || !isLoggedIn}
-                                    className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+                                    className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                     Delete Report
